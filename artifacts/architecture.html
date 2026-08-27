@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SQL Agent — Architecture & Decisions</title>
+  <style>
+    :root {
+      --ink: #13231f;
+      --muted: #5b6d67;
+      --paper: #f3f0e8;
+      --card: #fffdf7;
+      --line: #c9d2ca;
+      --green: #0b7356;
+      --mint: #a9e6c9;
+      --orange: #ef8354;
+      --yellow: #f2cf66;
+      --blue: #3b6ea8;
+      --shadow: 0 16px 50px rgba(19,35,31,.10);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 8% 4%, rgba(169,230,201,.38), transparent 24rem),
+        linear-gradient(rgba(19,35,31,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(19,35,31,.035) 1px, transparent 1px),
+        var(--paper);
+      background-size: auto, 24px 24px, 24px 24px, auto;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.5;
+    }
+    a { color: inherit; }
+    .shell { width: min(1180px, calc(100% - 32px)); margin: 0 auto; }
+    nav {
+      position: sticky; top: 0; z-index: 10;
+      background: rgba(243,240,232,.88); backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(19,35,31,.12);
+    }
+    nav .shell { min-height: 58px; display: flex; align-items: center; gap: 22px; }
+    .brand { font-weight: 850; letter-spacing: -.03em; margin-right: auto; }
+    nav a { text-decoration: none; font-size: 13px; font-weight: 700; color: var(--muted); }
+    nav a[aria-current="page"] { color: var(--green); }
+    header { padding: 84px 0 48px; }
+    .eyebrow { color: var(--green); font: 800 12px/1 ui-monospace, monospace; letter-spacing: .16em; text-transform: uppercase; }
+    h1 { margin: 14px 0 18px; max-width: 900px; font-size: clamp(48px, 8vw, 96px); line-height: .92; letter-spacing: -.07em; }
+    h1 em { color: var(--green); font-style: normal; }
+    .lead { max-width: 760px; font-size: clamp(18px, 2vw, 24px); color: var(--muted); }
+    .hero-meta { margin-top: 30px; display: flex; gap: 10px; flex-wrap: wrap; }
+    .pill { border: 1px solid var(--line); background: rgba(255,253,247,.78); border-radius: 999px; padding: 8px 12px; font: 700 12px/1 ui-monospace, monospace; }
+    section { padding: 46px 0; }
+    .section-head { display: grid; grid-template-columns: .75fr 1.25fr; gap: 40px; margin-bottom: 28px; align-items: end; }
+    h2 { font-size: clamp(32px, 5vw, 58px); line-height: .98; letter-spacing: -.055em; margin: 0; }
+    .section-head p { margin: 0; color: var(--muted); font-size: 17px; max-width: 650px; }
+    .map {
+      background: #10241f; color: #f7f4eb; border-radius: 28px; padding: 30px;
+      box-shadow: var(--shadow); overflow: hidden; position: relative;
+    }
+    .map::after { content: ""; position: absolute; width: 380px; height: 380px; border-radius: 50%; background: rgba(169,230,201,.08); right: -160px; top: -180px; }
+    .flow { display: grid; grid-template-columns: repeat(6, 1fr); align-items: stretch; gap: 22px; position: relative; z-index: 1; }
+    .node { position: relative; min-height: 150px; padding: 18px; border: 1px solid rgba(255,255,255,.17); border-radius: 18px; background: rgba(255,255,255,.055); }
+    .node:not(:last-child)::after { content: "→"; position: absolute; right: -18px; top: 54px; color: var(--mint); font-weight: 900; }
+    .node small { display: block; color: var(--mint); font: 700 10px/1.2 ui-monospace, monospace; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 12px; }
+    .node strong { display: block; font-size: 17px; line-height: 1.1; }
+    .node span { display: block; color: #b8c8c2; font-size: 12px; margin-top: 8px; }
+    .node.trust { border-color: var(--orange); box-shadow: inset 0 -3px 0 var(--orange); }
+    .model-rail { margin-top: 22px; display: flex; align-items: center; gap: 15px; border-top: 1px dashed rgba(255,255,255,.2); padding-top: 18px; color: #b8c8c2; font-size: 13px; }
+    .model-rail b { color: var(--yellow); }
+    .legend { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 18px; color: var(--muted); font-size: 12px; }
+    .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 7px; background: var(--orange); }
+    .legend i.green { background: var(--green); }
+    .decisions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .decision { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 22px; box-shadow: 0 8px 25px rgba(19,35,31,.05); }
+    .decision .number { color: var(--green); font: 800 11px/1 ui-monospace, monospace; }
+    .decision h3 { margin: 12px 0 14px; font-size: 23px; line-height: 1.05; letter-spacing: -.035em; }
+    .triad { display: grid; gap: 12px; }
+    .triad div { padding-top: 10px; border-top: 1px solid #e7e7df; color: var(--muted); font-size: 13px; }
+    .triad b { display: block; color: var(--ink); font: 800 10px/1 ui-monospace, monospace; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 5px; }
+    .decision a, .source a { text-decoration: none; border-bottom: 1px solid currentColor; color: var(--green); font-weight: 750; }
+    .boundary { display: grid; grid-template-columns: 1fr 1fr; border-radius: 24px; overflow: hidden; border: 1px solid var(--line); }
+    .boundary article { padding: 28px; background: var(--card); }
+    .boundary article:last-child { background: var(--ink); color: #f7f4eb; }
+    .boundary h3 { font-size: 28px; letter-spacing: -.04em; margin: 0 0 12px; }
+    .boundary ul { padding-left: 20px; margin: 0; }
+    .boundary li { margin: 8px 0; }
+    .boundary article:first-child li::marker { color: var(--green); }
+    .boundary article:last-child li::marker { color: var(--orange); }
+    .sources { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .source { background: rgba(255,253,247,.8); border-top: 3px solid var(--green); padding: 18px; min-height: 135px; }
+    .source code { display: block; color: var(--green); font-size: 11px; overflow-wrap: anywhere; }
+    .source p { font-size: 13px; color: var(--muted); margin-bottom: 0; }
+    footer { margin-top: 54px; padding: 28px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+    @media (max-width: 900px) {
+      .flow { grid-template-columns: repeat(2, 1fr); }
+      .node:not(:last-child)::after { display: none; }
+      .decisions, .sources { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 620px) {
+      nav a:not([aria-current]) { display: none; }
+      header { padding-top: 56px; }
+      .section-head, .boundary { grid-template-columns: 1fr; }
+      .flow, .decisions, .sources { grid-template-columns: 1fr; }
+    }
+    @media print { nav { position: static; } body { background: white; } .map, .decision { break-inside: avoid; } }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="shell">
+      <div class="brand">SQL AGENT / FIELD GUIDE</div>
+      <a href="architecture.html" aria-current="page">Architecture</a>
+      <a href="call-stack.html">Call stack</a>
+      <a href="benchmarks.html">Benchmarks</a>
+    </div>
+  </nav>
+
+  <main>
+    <header class="shell">
+      <div class="eyebrow">Architecture artifact · August 2026</div>
+      <h1>Natural language in.<br><em>Constrained SQL</em> out.</h1>
+      <p class="lead">A schema-generic probe that keeps framework leverage high and the credential, query, and evidence boundaries explicit.</p>
+      <div class="hero-meta">
+        <span class="pill">Pydantic AI 2.35.1</span><span class="pill">FastMCP 3.4.7</span>
+        <span class="pill">AG-UI</span><span class="pill">PostgreSQL / PGlite</span><span class="pill">Ollama · Gemma 4 11.9B</span>
+      </div>
+    </header>
+
+    <section class="shell" id="system-map">
+      <div class="section-head">
+        <h2>One request,<br>six boundaries.</h2>
+        <p>The MCP boundary is real but local. The DSN terminates inside the database adapter; only typed schemas and typed query outcomes travel back toward the model.</p>
+      </div>
+      <div class="map">
+        <div class="flow">
+          <div class="node"><small>01 · browser</small><strong>AG-UI client</strong><span>Prompt + message history. Renders protocol events.</span></div>
+          <div class="node"><small>02 · transport</small><strong>FastAPI route</strong><span>Creates request ID and dispatches through AGUIAdapter.</span></div>
+          <div class="node"><small>03 · orchestration</small><strong>Pydantic AI</strong><span>Typed deps, structured answer, retries, optional history capability.</span></div>
+          <div class="node"><small>04 · policy</small><strong>Exposure setup</strong><span>Granular, catalog, or prefetched schema context.</span></div>
+          <div class="node"><small>05 · tools</small><strong>In-process MCP</strong><span>FastMCP preserves tool contracts without a network hop.</span></div>
+          <div class="node trust"><small>06 · trust edge</small><strong>DB adapter</strong><span>Parse → reject → read-only transaction → timeout → cursor cap.</span></div>
+        </div>
+        <div class="model-rail"><b>MODEL RAIL</b> Ollama speaks the OpenAI chat protocol to Pydantic AI. It sees tool schemas and typed results—never the DSN.</div>
+      </div>
+      <div class="legend"><span><i></i>credential + execution trust boundary</span><span><i class="green"></i>typed application boundary</span></div>
+    </section>
+
+    <section class="shell" id="decisions">
+      <div class="section-head">
+        <h2>Why this shape</h2>
+        <p>Each choice answers a concrete pressure observed during the probe—not a hypothetical platform requirement.</p>
+      </div>
+      <div class="decisions">
+        <article class="decision">
+          <span class="number">D-01</span><h3>In-process MCP</h3>
+          <div class="triad">
+            <div><b>Pressure</b>Probe MCP ergonomics without adding deployment and transport failure modes.</div>
+            <div><b>Choice</b>Wrap FastMCP directly with <code>MCPToolset</code>.</div>
+            <div><b>Consequence</b>Tool contracts remain portable; local deployment stays one process. <a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/exposure.py#L24" data-code-ref="../src/sql_agent/exposure.py#L24">source ↗</a></div>
+          </div>
+        </article>
+        <article class="decision">
+          <span class="number">D-02</span><h3>Schema exposure is policy</h3>
+          <div class="triad">
+            <div><b>Pressure</b>Schema discovery costs model turns and tokens.</div>
+            <div><b>Choice</b>Make three exposure modes interchangeable at one seam.</div>
+            <div><b>Consequence</b>Prefetched wins the bounded matrix while held-out schemas still pass. <a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/exposure.py#L24" data-code-ref="../src/sql_agent/exposure.py#L24">source ↗</a></div>
+          </div>
+        </article>
+        <article class="decision">
+          <span class="number">D-03</span><h3>Types carry states</h3>
+          <div class="triad">
+            <div><b>Pressure</b>“Success + truncated + error” cannot safely hide in booleans or anonymous JSON.</div>
+            <div><b>Choice</b>Frozen dataclasses and <code>QueryOk | QueryTruncated | QueryRejected</code>.</div>
+            <div><b>Consequence</b>Every interface names its possible state. <a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/types.py#L42" data-code-ref="../src/sql_agent/types.py#L42">source ↗</a></div>
+          </div>
+        </article>
+        <article class="decision">
+          <span class="number">D-04</span><h3>Safety is layered</h3>
+          <div class="triad">
+            <div><b>Pressure</b>A read-only transaction alone does not constrain privileged server functions.</div>
+            <div><b>Choice</b>Single-statement parsing, DML/DDL scanning, capability denylist, DB read-only mode, timeout, row cap, least-privilege role.</div>
+            <div><b>Consequence</b>Missteps become typed rejections before data crosses the tool boundary. <a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/db_mcp.py#L113" data-code-ref="../src/sql_agent/db_mcp.py#L113">source ↗</a></div>
+          </div>
+        </article>
+        <article class="decision">
+          <span class="number">D-05</span><h3>AG-UI over bespoke SSE</h3>
+          <div class="triad">
+            <div><b>Pressure</b>Streaming tool and text events by hand expands protocol ownership.</div>
+            <div><b>Choice</b>Delegate event adaptation to <code>AGUIAdapter</code>; keep a frozen raw-SSE control.</div>
+            <div><b>Consequence</b>Richer event semantics and less orchestration code, with a more capable browser client. <a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/app.py#L54" data-code-ref="../src/sql_agent/app.py#L54">source ↗</a></div>
+          </div>
+        </article>
+        <article class="decision">
+          <span class="number">D-06</span><h3>History remains optional</h3>
+          <div class="triad">
+            <div><b>Pressure</b>Full resend grows, but lossy compaction can cost more tokens or semantics.</div>
+            <div><b>Choice</b>Attach immutable <code>ProcessHistory</code> only through an explicit policy.</div>
+            <div><b>Consequence</b>Default remains simple; the hook is ready when evidence justifies it. <a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/history.py#L19" data-code-ref="../src/sql_agent/history.py#L19">source ↗</a></div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="shell" id="boundary">
+      <div class="section-head"><h2>What crosses<br>the model boundary?</h2><p>The architecture is easiest to reason about by naming both sides of the line.</p></div>
+      <div class="boundary">
+        <article><h3>Model-visible</h3><ul><li>Schema tool declarations or prefetched typed catalog</li><li>Natural-language request and request correlation ID</li><li><code>QueryResult</code> rows, truncation, or sanitized rejection</li><li>Message history selected by the history policy</li></ul></article>
+        <article><h3>Application-only</h3><ul><li>Database DSN and Ollama API secret</li><li>asyncpg connection and transaction</li><li>PostgreSQL exception details</li><li>Experiment call traces; disabled for long-lived app routes</li></ul></article>
+      </div>
+    </section>
+
+    <section class="shell" id="sources">
+      <div class="section-head"><h2>Source trail</h2><p>Start here to verify the diagram against implementation.</p></div>
+      <div class="sources">
+        <article class="source"><a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/app.py#L29" data-code-ref="../src/sql_agent/app.py#L29"><code>src/sql_agent/app.py:L29</code></a><p>Composition root, AG-UI route, per-request dependencies, answer bridge.</p></article>
+        <article class="source"><a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/agent.py#L52" data-code-ref="../src/sql_agent/agent.py#L52"><code>src/sql_agent/agent.py:L52</code></a><p>Typed agent construction and measured run path.</p></article>
+        <article class="source"><a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/db_mcp.py#L168" data-code-ref="../src/sql_agent/db_mcp.py#L168"><code>src/sql_agent/db_mcp.py:L168</code></a><p>FastMCP tool surface and call tracing boundary.</p></article>
+        <article class="source"><a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/types.py#L19" data-code-ref="../src/sql_agent/types.py#L19"><code>src/sql_agent/types.py:L19</code></a><p>Frozen schema, query-result, and answer contracts.</p></article>
+      </div>
+    </section>
+  </main>
+
+  <footer><div class="shell">Standalone architecture artifact · Evidence is bounded to the checked-in probe. See <a href="../notes/verdict.md">notes/verdict.md</a> for the complete conclusion and limitations.</div></footer>
+</body>
+</html>

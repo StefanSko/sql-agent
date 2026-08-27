@@ -56,3 +56,11 @@ current machine; they do not claim that the full topology ran here.
 
 The reconstructed immutable control and its run instructions are under
 [`baseline/hand_rolled/`](baseline/hand_rolled/).
+
+## Visual field guide
+
+Standalone visual artifacts are under [`artifacts/`](artifacts/):
+
+- [Architecture and decision motivation](artifacts/architecture.html)
+- [Call stack and interface type journey](artifacts/call-stack.html)
+- [Benchmark design, statistics, and verdict](artifacts/benchmarks.html)
