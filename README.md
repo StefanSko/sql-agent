@@ -63,4 +63,5 @@ Standalone visual artifacts are under [`artifacts/`](artifacts/):
 
 - [Architecture and decision motivation](artifacts/architecture.html)
 - [Call stack and interface type journey](artifacts/call-stack.html)
-- [Benchmark design, statistics, and verdict](artifacts/benchmarks.html)
+- [Benchmark design, statistics, and result](artifacts/benchmarks.html)
+- [Motivated verdict and visual improvement paths](artifacts/verdict.html)

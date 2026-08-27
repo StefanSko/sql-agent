@@ -9,6 +9,7 @@ ARTIFACTS = {
     "architecture.html": ("Why this shape", "In-process MCP"),
     "call-stack.html": ("Type journey", "QueryResult"),
     "benchmarks.html": ("Prefetched wins", "18 / 18"),
+    "verdict.html": ("Keep the typed core", "Product-fit filter"),
 }
 
 
