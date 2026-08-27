@@ -1,0 +1,527 @@
+{
+  "metadata": {
+    "executed_at": "2026-08-27T11:36:06.679542+00:00",
+    "workload_version": "1",
+    "model": {
+      "name": "gemma4:12b-it-q4_K_M",
+      "digest": "4eb23ef187e2c5462566d6a1d3bbbc2f1346d0b4327cbb66d58fffbcc9b2b05c",
+      "modified_at": "2026-08-22T13:34:39.1681947+02:00",
+      "family": "gemma4",
+      "parameter_size": "11.9B",
+      "quantization_level": "Q4_K_M",
+      "context_length": 262144
+    },
+    "repetitions": 3,
+    "warmup_runs": 1,
+    "seed": 42,
+    "timeout_seconds": 120.0,
+    "temperature": 0.0,
+    "pydantic_ai_version": "2.35.1",
+    "fastmcp_version": "3.4.7",
+    "mode_orders": [
+      [
+        "granular",
+        "catalog",
+        "prefetched"
+      ],
+      [
+        "catalog",
+        "prefetched",
+        "granular"
+      ],
+      [
+        "prefetched",
+        "granular",
+        "catalog"
+      ]
+    ]
+  },
+  "checks": {
+    "variants": [
+      {
+        "mode": "granular",
+        "safety_passed": true,
+        "heldout_schema_passed": true
+      },
+      {
+        "mode": "catalog",
+        "safety_passed": true,
+        "heldout_schema_passed": true
+      },
+      {
+        "mode": "prefetched",
+        "safety_passed": true,
+        "heldout_schema_passed": true
+      }
+    ]
+  },
+  "records": [
+    {
+      "workload_version": "1",
+      "mode": "granular",
+      "case_id": "member-trip-count",
+      "repetition": 0,
+      "run_order": 1,
+      "seed": 42,
+      "outcome": {
+        "metrics": {
+          "latency_seconds": 25.67023704200983,
+          "first_event_seconds": 0.4798392499797046,
+          "model_request_count": 6,
+          "input_tokens": 4610,
+          "output_tokens": 560,
+          "retries": 0,
+          "mcp_calls": [
+            "list_tables",
+            "describe_table",
+            "describe_table",
+            "run_query",
+            "run_query"
+          ]
+        },
+        "kind": "succeeded"
+      }
+    },
+    {
+      "workload_version": "1",
+      "mode": "catalog",
+      "case_id": "member-trip-count",
+      "repetition": 0,
+      "run_order": 2,
+      "seed": 42,
+      "outcome": {
+        "metrics": {
+          "latency_seconds": 19.3321028330829,
+          "first_event_seconds": 0.5762307080440223,
+          "model_request_count": 4,
+          "input_tokens": 3010,
+          "output_tokens": 411,
+          "retries": 0,
+          "mcp_calls": [
+            "get_catalog",
+            "run_query",
+            "run_query"
+          ]
+        },
+        "kind": "succeeded"
+      }
+    },
+    {
+      "workload_version": "1",
+      "mode": "prefetched",
+      "case_id": "member-trip-count",
+      "repetition": 0,
+      "run_order": 3,
+      "seed": 42,
+      "outcome": {
+        "metrics": {
+          "latency_seconds": 17.871722917072475,
+          "first_event_seconds": 3.0692961250897497,
+          "model_request_count": 3,
+          "input_tokens": 2361,
+          "output_tokens": 331,
+          "retries": 0,
+          "mcp_calls": [
+            "get_catalog",
+            "run_query",
+            "run_query"
+          ]
+        },
+        "kind": "succeeded"
+      }
+    },
+    {
+      "workload_version": "1",
+      "mode": "granular",
+      "case_id": "heldout-total-quantity",
+      "repetition": 0,
+      "run_order": 4,
+      "seed": 42,
+      "outcome": {
+        "metrics": {
+          "latency_seconds": 14.41115574981086,
+          "first_event_seconds": 2.3655182919465005,
+          "model_request_count": 5,
+          "input_tokens": 2825,
+          "output_tokens": 250,
+          "retries": 0,
+          "mcp_calls": [
+            "list_tables",
+            "describe_table",
+            "describe_table",
+            "run_query"
+          ]
+        },
+        "kind": "succeeded"
+      }
+    },
+    {
+      "workload_version": "1",
+      "mode": "catalog",
+      "case_id": "heldout-total-quantity",
+      "repetition": 0,
+      "run_order": 5,
+      "seed": 42,
+      "outcome": {
+        "metrics": {
+          "latency_seconds": 10.69655887503177,
+          "first_event_seconds": 1.9036881250794977,
+          "model_request_count": 3,
+          "input_tokens": 1388,
+          "output_tokens": 194,
+          "retries": 0,
+          "mcp_calls": [
+            "get_catalog",
+            "run_query"
+          ]
+        },
+        "kind": "succeeded"
+      }
+    },
+    {
+      "workload_version": "1",
+      "mode": "prefetched",
+      "case_id": "heldout-total-quantity",
+      "repetition": 0,
+      "run_order": 6,
+      "seed": 42,
+      "outcome": {
+        "metrics": {
+          "latency_seconds": 10.58719399990514,
+          "first_event_seconds": 2.290092083858326,
+          "model_request_count": 2,
+          "input_tokens": 946,
+          "output_tokens": 198,
+          "retries": 0,
+          "mcp_calls": [
+            "get_catalog",
+            "run_query"
+          ]
+        },
+        "kind": "succeeded"
+      }
+    },
+    {
+      "workload_version": "1",
+      "mode": "catalog",
+      "case_id": "member-trip-count",
+      "repetition": 1,
+      "run_order": 7,
+      "seed": 43,
+      "outcome": {
+        "metrics": {
+          "latency_seconds": 20.561155957868323,
+          "first_event_seconds": 1.784212457947433,
+          "model_request_count": 4,
+          "input_tokens": 3010,
+          "output_tokens": 411,
+          "retries": 0,
+          "mcp_calls": [
+            "get_catalog",
+            "run_query",
+            "run_query"
+          ]
+        },
+        "kind": "succeeded"
+      }
+    },
+    {
+      "workload_version": "1",
+      "mode": "prefetched",
+      "case_id": "member-trip-count",
+      "repetition": 1,
+      "run_order": 8,
+      "seed": 43,
+      "outcome": {
+        "metrics": {
+          "latency_seconds": 17.795677416957915,
+          "first_event_seconds": 3.1692995000630617,
+          "model_request_count": 3,
+          "input_tokens": 2361,
+          "output_tokens": 331,
+          "retries": 0,
+          "mcp_calls": [
+            "get_catalog",
+            "run_query",
+            "run_query"
+          ]
+        },
+        "kind": "succeeded"
+      }
+    },
+    {
+      "workload_version": "1",
+      "mode": "granular",
+      "case_id": "member-trip-count",
+      "repetition": 1,
+      "run_order": 9,
+      "seed": 43,
+      "outcome": {
+        "metrics": {
+          "latency_seconds": 27.50218304200098,
+          "first_event_seconds": 2.3503946668934077,
+          "model_request_count": 6,
+          "input_tokens": 4610,
+          "output_tokens": 560,
+          "retries": 0,
+          "mcp_calls": [
+            "list_tables",
+            "describe_table",
+            "describe_table",
+            "run_query",
+            "run_query"
+          ]
+        },
+        "kind": "succeeded"
+      }
+    },
+    {
+      "workload_version": "1",
+      "mode": "catalog",
+      "case_id": "heldout-total-quantity",
+      "repetition": 1,
+      "run_order": 10,
+      "seed": 43,
+      "outcome": {
+        "metrics": {
+          "latency_seconds": 10.796003625029698,
+          "first_event_seconds": 2.190290292026475,
+          "model_request_count": 3,
+          "input_tokens": 1385,
+          "output_tokens": 191,
+          "retries": 0,
+          "mcp_calls": [
+            "get_catalog",
+            "run_query"
+          ]
+        },
+        "kind": "succeeded"
+      }
+    },
+    {
+      "workload_version": "1",
+      "mode": "prefetched",
+      "case_id": "heldout-total-quantity",
+      "repetition": 1,
+      "run_order": 11,
+      "seed": 43,
+      "outcome": {
+        "metrics": {
+          "latency_seconds": 10.367529375012964,
+          "first_event_seconds": 2.2464890838600695,
+          "model_request_count": 2,
+          "input_tokens": 948,
+          "output_tokens": 198,
+          "retries": 0,
+          "mcp_calls": [
+            "get_catalog",
+            "run_query"
+          ]
+        },
+        "kind": "succeeded"
+      }
+    },
+    {
+      "workload_version": "1",
+      "mode": "granular",
+      "case_id": "heldout-total-quantity",
+      "repetition": 1,
+      "run_order": 12,
+      "seed": 43,
+      "outcome": {
+        "metrics": {
+          "latency_seconds": 14.145859291078523,
+          "first_event_seconds": 2.055899624945596,
+          "model_request_count": 5,
+          "input_tokens": 2841,
+          "output_tokens": 254,
+          "retries": 0,
+          "mcp_calls": [
+            "list_tables",
+            "describe_table",
+            "describe_table",
+            "run_query"
+          ]
+        },
+        "kind": "succeeded"
+      }
+    },
+    {
+      "workload_version": "1",
+      "mode": "prefetched",
+      "case_id": "member-trip-count",
+      "repetition": 2,
+      "run_order": 13,
+      "seed": 44,
+      "outcome": {
+        "metrics": {
+          "latency_seconds": 21.91452366602607,
+          "first_event_seconds": 2.755540458019823,
+          "model_request_count": 3,
+          "input_tokens": 2459,
+          "output_tokens": 441,
+          "retries": 0,
+          "mcp_calls": [
+            "get_catalog",
+            "run_query",
+            "run_query"
+          ]
+        },
+        "kind": "succeeded"
+      }
+    },
+    {
+      "workload_version": "1",
+      "mode": "granular",
+      "case_id": "member-trip-count",
+      "repetition": 2,
+      "run_order": 14,
+      "seed": 44,
+      "outcome": {
+        "metrics": {
+          "latency_seconds": 27.503715708851814,
+          "first_event_seconds": 2.3452364588156343,
+          "model_request_count": 6,
+          "input_tokens": 4616,
+          "output_tokens": 560,
+          "retries": 0,
+          "mcp_calls": [
+            "list_tables",
+            "describe_table",
+            "describe_table",
+            "run_query",
+            "run_query"
+          ]
+        },
+        "kind": "succeeded"
+      }
+    },
+    {
+      "workload_version": "1",
+      "mode": "catalog",
+      "case_id": "member-trip-count",
+      "repetition": 2,
+      "run_order": 15,
+      "seed": 44,
+      "outcome": {
+        "metrics": {
+          "latency_seconds": 21.613009291002527,
+          "first_event_seconds": 2.1400048749055713,
+          "model_request_count": 4,
+          "input_tokens": 3017,
+          "output_tokens": 430,
+          "retries": 0,
+          "mcp_calls": [
+            "get_catalog",
+            "run_query",
+            "run_query"
+          ]
+        },
+        "kind": "succeeded"
+      }
+    },
+    {
+      "workload_version": "1",
+      "mode": "prefetched",
+      "case_id": "heldout-total-quantity",
+      "repetition": 2,
+      "run_order": 16,
+      "seed": 44,
+      "outcome": {
+        "metrics": {
+          "latency_seconds": 10.585697124945,
+          "first_event_seconds": 2.4708443330600858,
+          "model_request_count": 2,
+          "input_tokens": 948,
+          "output_tokens": 198,
+          "retries": 0,
+          "mcp_calls": [
+            "get_catalog",
+            "run_query"
+          ]
+        },
+        "kind": "succeeded"
+      }
+    },
+    {
+      "workload_version": "1",
+      "mode": "granular",
+      "case_id": "heldout-total-quantity",
+      "repetition": 2,
+      "run_order": 17,
+      "seed": 44,
+      "outcome": {
+        "metrics": {
+          "latency_seconds": 14.241094291908666,
+          "first_event_seconds": 2.3050603750161827,
+          "model_request_count": 5,
+          "input_tokens": 2830,
+          "output_tokens": 250,
+          "retries": 0,
+          "mcp_calls": [
+            "list_tables",
+            "describe_table",
+            "describe_table",
+            "run_query"
+          ]
+        },
+        "kind": "succeeded"
+      }
+    },
+    {
+      "workload_version": "1",
+      "mode": "catalog",
+      "case_id": "heldout-total-quantity",
+      "repetition": 2,
+      "run_order": 18,
+      "seed": 44,
+      "outcome": {
+        "metrics": {
+          "latency_seconds": 10.456550917122513,
+          "first_event_seconds": 1.8489089170470834,
+          "model_request_count": 3,
+          "input_tokens": 1385,
+          "output_tokens": 191,
+          "retries": 0,
+          "mcp_calls": [
+            "get_catalog",
+            "run_query"
+          ]
+        },
+        "kind": "succeeded"
+      }
+    }
+  ],
+  "summary": {
+    "eligible": [
+      "granular",
+      "catalog",
+      "prefetched"
+    ],
+    "winners": [
+      "prefetched"
+    ],
+    "selected": "prefetched",
+    "is_tie": false,
+    "scores": {
+      "granular": {
+        "correct_repetitions": 6,
+        "macro_median_model_requests": 5.5,
+        "macro_median_latency_seconds": 20.871638666954823,
+        "macro_median_input_tokens": 3720.0
+      },
+      "catalog": {
+        "correct_repetitions": 6,
+        "macro_median_model_requests": 3.5,
+        "macro_median_latency_seconds": 15.628857416450046,
+        "macro_median_input_tokens": 2197.5
+      },
+      "prefetched": {
+        "correct_repetitions": 6,
+        "macro_median_model_requests": 2.5,
+        "macro_median_latency_seconds": 14.228710021008737,
+        "macro_median_input_tokens": 1654.5
+      }
+    }
+  }
+}

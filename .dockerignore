@@ -1,0 +1,13 @@
+.git
+.venv
+node_modules
+.pytest_cache
+.ruff_cache
+.ty_cache
+experiments
+tests
+baseline
+notes
+.env*
+__pycache__
+*.pyc

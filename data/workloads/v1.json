@@ -1,0 +1,24 @@
+[
+  {
+    "case_id": "member-trip-count",
+    "dataset": "bike-share",
+    "prompt": "How many trips were taken by member riders? Use the database tools, alias the numeric result member_trips, and report the number.",
+    "schema_path": "data/schema.sql",
+    "seed_directory": "data/seed",
+    "expected": {
+      "column": "member_trips",
+      "value": 6
+    }
+  },
+  {
+    "case_id": "heldout-total-quantity",
+    "dataset": "heldout-inventory",
+    "prompt": "What is the total quantity across all stored records? Use the database tools, alias the numeric result total_quantity, and report the number.",
+    "schema_path": "data/workloads/heldout.sql",
+    "seed_directory": null,
+    "expected": {
+      "column": "total_quantity",
+      "value": 23
+    }
+  }
+]

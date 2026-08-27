@@ -1,0 +1,72 @@
+services:
+  ollama:
+    image: ollama/ollama:0.32.15
+    volumes:
+      - ollama-models:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
+
+  ollama-init:
+    image: ollama/ollama:0.32.15
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+      MODEL_NAME: ${SQL_AGENT_MODEL_NAME:-gemma4:12b-it-q4_K_M}
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >-
+        ollama pull "$${MODEL_NAME}" &&
+        ollama show "$${MODEL_NAME}" >/dev/null
+    restart: "no"
+
+  postgres:
+    image: postgres:17-alpine
+    profiles: ["postgres"]
+    environment:
+      POSTGRES_DB: probe
+      POSTGRES_USER: probe
+      POSTGRES_PASSWORD: probe
+    volumes:
+      - ./data:/seed:ro
+      - ./docker/postgres-init.sql:/docker-entrypoint-initdb.d/10-seed.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U probe -d probe"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  agent-api:
+    build: .
+    depends_on:
+      ollama-init:
+        condition: service_completed_successfully
+    environment:
+      SQL_AGENT_DSN: ${SQL_AGENT_DSN:-postgresql://agent_reader:agent_reader@postgres:5432/probe}
+      SQL_AGENT_OLLAMA_BASE_URL: http://ollama:11434/v1
+      SQL_AGENT_MODEL_NAME: ${SQL_AGENT_MODEL_NAME:-gemma4:12b-it-q4_K_M}
+      SQL_AGENT_OLLAMA_API_KEY: ollama
+      SQL_AGENT_EXPOSURE_MODE: ${SQL_AGENT_EXPOSURE_MODE:-prefetched}
+      SQL_AGENT_AGUI_MODEL_THINKING: "false"
+    ports:
+      - "${AGENT_PORT:-8000}:8000"
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - >-
+          import urllib.request;
+          urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2).read()
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 10s
+
+volumes:
+  ollama-models:

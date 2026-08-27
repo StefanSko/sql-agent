@@ -1,0 +1,51 @@
+[project]
+name = "sql-agent"
+version = "0.1.0"
+description = "Pydantic AI, MCP, and AG-UI SQL-agent probe"
+authors = [
+    { name = "StefanSko", email = "Stefan.sko@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "asyncpg>=0.31.0",
+    "fastapi>=0.141.1",
+    "fastmcp>=3.4.7",
+    "pydantic-ai-slim[ag-ui,mcp,openai]>=2.35.1",
+    "pydantic-settings>=2.15.0",
+    "sqlparse>=0.6.0",
+    "uvicorn>=0.52.4",
+]
+
+[project.scripts]
+sql-agent = "sql_agent.__main__:main"
+sql-agent-experiment = "sql_agent.experiment:main"
+sql-agent-multiturn = "sql_agent.multiturn_experiment:main"
+
+[build-system]
+requires = ["uv_build>=0.8.17,<0.9.0"]
+build-backend = "uv_build"
+
+[tool.pytest.ini_options]
+addopts = "-m 'not e2e'"
+asyncio_mode = "auto"
+markers = [
+    "e2e: requires local Ollama or the composed Docker application",
+]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+
+[tool.ty.environment]
+python-version = "3.13"
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
+    "ruff>=0.16.4",
+    "ty>=0.0.75",
+]

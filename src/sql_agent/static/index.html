@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SQL Agent Probe</title>
+  <style>
+    :root { color-scheme: light dark; font-family: ui-monospace, SFMono-Regular, monospace; }
+    body { margin: 0 auto; max-width: 58rem; padding: 2rem 1rem; }
+    #messages { display: grid; gap: .75rem; margin: 1.5rem 0; }
+    .message, .tool { border: 1px solid #8886; border-radius: .5rem; padding: .75rem; white-space: pre-wrap; }
+    .user { border-color: #4b8; }
+    .tool { color: #777; font-size: .9rem; }
+    form { display: flex; gap: .5rem; }
+    input { flex: 1; min-width: 0; padding: .75rem; }
+    button { padding: .75rem 1rem; }
+    [aria-busy="true"]::after { content: " …"; }
+  </style>
+</head>
+<body>
+  <h1>SQL Agent Probe</h1>
+  <p>Ask a question about the connected database. Schema is discovered at run time.</p>
+  <main id="messages" aria-live="polite"></main>
+  <form id="chat">
+    <label for="prompt">Question</label>
+    <input id="prompt" required autocomplete="off">
+    <button type="submit">Send</button>
+  </form>
+  <script>
+    const messagesElement = document.querySelector('#messages')
+    const form = document.querySelector('#chat')
+    const prompt = document.querySelector('#prompt')
+    const history = []
+    const visible = new Map()
+    let running = false
+
+    function show(id, className, text) {
+      let element = visible.get(id)
+      if (!element) {
+        element = document.createElement('div')
+        element.className = className
+        element.dataset.messageId = id
+        messagesElement.append(element)
+        visible.set(id, element)
+      }
+      element.textContent = text
+      return element
+    }
+
+    function applyEvent(event) {
+      // AG-UI vocabulary used deliberately: TEXT_MESSAGE_CONTENT and tool lifecycle events.
+      if (event.type === 'TEXT_MESSAGE_START') {
+        history.push({ id: event.messageId, role: 'assistant', content: '' })
+        show(event.messageId, 'message assistant', '')
+      } else if (event.type === 'TEXT_MESSAGE_CONTENT') {
+        const message = history.find((item) => item.id === event.messageId)
+        if (message) message.content += event.delta
+        const element = show(event.messageId, 'message assistant', message?.content || event.delta)
+        element.setAttribute('aria-busy', 'true')
+      } else if (event.type === 'TEXT_MESSAGE_END') {
+        show(event.messageId, 'message assistant', history.find((item) => item.id === event.messageId)?.content || '')
+          .removeAttribute('aria-busy')
+      } else if (event.type === 'TOOL_CALL_START') {
+        const id = event.toolCallId
+        const parentId = event.parentMessageId || `assistant-${id}`
+        let owner = history.find((item) => item.id === parentId)
+        if (!owner) {
+          owner = { id: parentId, role: 'assistant', content: null, toolCalls: [] }
+          history.push(owner)
+        }
+        if (!owner.toolCalls) owner.toolCalls = []
+        owner.toolCalls.push({ id, type: 'function', function: { name: event.toolCallName, arguments: '' } })
+        show(id, 'tool', `Calling ${event.toolCallName}`)
+      } else if (event.type === 'TOOL_CALL_ARGS') {
+        const owner = history.find((item) => item.toolCalls?.some((call) => call.id === event.toolCallId))
+        const call = owner?.toolCalls.find((call) => call.id === event.toolCallId)
+        if (call) call.function.arguments += event.delta
+      } else if (event.type === 'TOOL_CALL_RESULT') {
+        history.push({
+          id: event.messageId,
+          role: 'tool',
+          content: typeof event.content === 'string' ? event.content : JSON.stringify(event.content),
+          toolCallId: event.toolCallId,
+        })
+        show(event.toolCallId, 'tool', `${visible.get(event.toolCallId)?.textContent || 'Tool'} ✓`)
+      } else if (event.type === 'REASONING_ENCRYPTED_VALUE') {
+        if (event.subtype === 'tool-call') {
+          const owner = history.find((item) => item.toolCalls?.some((call) => call.id === event.entityId))
+          const call = owner?.toolCalls.find((item) => item.id === event.entityId)
+          if (call) call.encryptedValue = event.encryptedValue
+        } else if (event.subtype === 'message') {
+          const message = history.find((item) => item.id === event.entityId)
+          if (message) message.encryptedValue = event.encryptedValue
+        }
+      } else if (event.type === 'RUN_ERROR') {
+        show(`error-${Date.now()}`, 'message error', `Run failed: ${event.message}`)
+      }
+    }
+
+    async function run() {
+      if (running) return
+      running = true
+      form.querySelector('button').disabled = true
+      const content = prompt.value
+      prompt.value = ''
+      const user = { id: crypto.randomUUID(), role: 'user', content }
+      history.push(user)
+      show(user.id, 'message user', content)
+      try {
+        const response = await fetch('/agui', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            threadId: 'browser-session', runId: crypto.randomUUID(), state: {},
+            messages: history, tools: [], context: [], forwardedProps: {},
+          }),
+        })
+        if (!response.ok || !response.body) throw new Error(`HTTP ${response.status}`)
+        const reader = response.body.pipeThrough(new TextDecoderStream()).getReader()
+        let buffer = ''
+        while (true) {
+          const { value, done } = await reader.read()
+          if (done) break
+          buffer += value
+          const chunks = buffer.split('\n\n')
+          buffer = chunks.pop() || ''
+          for (const chunk of chunks) {
+            const data = chunk.split('\n').find((line) => line.startsWith('data: '))
+            if (data) applyEvent(JSON.parse(data.slice(6)))
+          }
+        }
+      } catch (error) {
+        show(`error-${Date.now()}`, 'message error', `Request failed: ${error.message}`)
+      } finally {
+        running = false
+        form.querySelector('button').disabled = false
+        prompt.focus()
+      }
+    }
+
+    form.addEventListener('submit', (event) => { event.preventDefault(); run() })
+  </script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+[
+  {"prompt": "Turn 1: How many trips were taken by member riders? Use the database tools and report the number.", "expected_text": "6"},
+  {"prompt": "Turn 2: Verify again how many trips were taken by member riders, using the database tools.", "expected_text": "6"},
+  {"prompt": "Turn 3: Recheck the member-rider trip count with the database tools and report it.", "expected_text": "6"},
+  {"prompt": "Turn 4: Use the database tools to confirm the number of trips taken by member riders.", "expected_text": "6"},
+  {"prompt": "Turn 5: Recompute how many trips were taken by member riders and report the number.", "expected_text": "6"},
+  {"prompt": "Turn 6: Query the database again for the count of trips taken by member riders.", "expected_text": "6"},
+  {"prompt": "Turn 7: Confirm with the database tools how many trips member riders took.", "expected_text": "6"},
+  {"prompt": "Turn 8: Recalculate the member-rider trip count using the database tools.", "expected_text": "6"},
+  {"prompt": "Turn 9: Check the database once more for how many trips member riders took.", "expected_text": "6"},
+  {"prompt": "Turn 10: Finally verify how many trips were taken by member riders using the database tools.", "expected_text": "6"}
+]

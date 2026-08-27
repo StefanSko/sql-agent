@@ -1,0 +1,28 @@
+{
+  "executed_at": "2026-08-27",
+  "full_compose_executed": false,
+  "implemented_services": [
+    "agent-api",
+    "ollama",
+    "ollama-init",
+    "postgres"
+  ],
+  "validated_boundaries": [
+    "built agent-api image",
+    "containerized seeded PostgreSQL",
+    "containerized agent-api",
+    "exact host Ollama OpenAI endpoint",
+    "AG-UI NL-to-SQL journey"
+  ],
+  "agent_image": "sha256:c9be2d05994732d163cbf74aae3a0f6de8719d65c0c512e5bb6c7d81d3aea12c",
+  "postgres_image": "postgres@sha256:18cfe3ef5e6815560c98237d6216d1e5119702fb0f3894c8785dd58b8bbe5d73",
+  "model_name": "gemma4:12b-it-q4_K_M",
+  "model_digest": "4eb23ef187e2c5462566d6a1d3bbbc2f1346d0b4327cbb66d58fffbcc9b2b05c",
+  "accepted_e2e_runs": 1,
+  "observed_failed_e2e_runs_before_acceptance": 1,
+  "full_compose_blockers": [
+    "installed Docker CLI has no Compose plugin",
+    "ollama/ollama:0.32.15 arm64 image has a 2.64 GB layer and did not finish pulling in two bounded attempts",
+    "available Docker VM memory is 3.8 GB, below the installed 7.0 GB model footprint"
+  ]
+}

@@ -1,0 +1,115 @@
+{
+  "metadata": {
+    "executed_at": "2026-08-27T12:17:43.396884+00:00",
+    "journey_version": "1",
+    "model": {
+      "name": "gemma4:12b-it-q4_K_M",
+      "digest": "4eb23ef187e2c5462566d6a1d3bbbc2f1346d0b4327cbb66d58fffbcc9b2b05c",
+      "modified_at": "2026-08-22T13:34:39.1681947+02:00",
+      "family": "gemma4",
+      "parameter_size": "11.9B",
+      "quantization_level": "Q4_K_M",
+      "context_length": 262144
+    },
+    "exposure_mode": "prefetched"
+  },
+  "measurements": [
+    {
+      "turn": 1,
+      "request_bytes": 312,
+      "input_tokens": 1315,
+      "latency_seconds": 6.747063249815255,
+      "correct": true,
+      "context_limit": 262144
+    },
+    {
+      "turn": 2,
+      "request_bytes": 1484,
+      "input_tokens": 0,
+      "latency_seconds": 248.2510747499764,
+      "correct": false,
+      "context_limit": 262144
+    },
+    {
+      "turn": 3,
+      "request_bytes": 2456,
+      "input_tokens": 1887,
+      "latency_seconds": 7.101054917089641,
+      "correct": true,
+      "context_limit": 262144
+    },
+    {
+      "turn": 4,
+      "request_bytes": 3601,
+      "input_tokens": 2193,
+      "latency_seconds": 7.78864304209128,
+      "correct": true,
+      "context_limit": 262144
+    },
+    {
+      "turn": 5,
+      "request_bytes": 4720,
+      "input_tokens": 2495,
+      "latency_seconds": 8.970280792098492,
+      "correct": true,
+      "context_limit": 262144
+    },
+    {
+      "turn": 6,
+      "request_bytes": 5837,
+      "input_tokens": 2795,
+      "latency_seconds": 9.65149287506938,
+      "correct": true,
+      "context_limit": 262144
+    },
+    {
+      "turn": 7,
+      "request_bytes": 6961,
+      "input_tokens": 3087,
+      "latency_seconds": 10.332895416999236,
+      "correct": true,
+      "context_limit": 262144
+    },
+    {
+      "turn": 8,
+      "request_bytes": 8126,
+      "input_tokens": 7160,
+      "latency_seconds": 105.86550924996845,
+      "correct": true,
+      "context_limit": 262144
+    },
+    {
+      "turn": 9,
+      "request_bytes": 9875,
+      "input_tokens": 3905,
+      "latency_seconds": 12.071688958909363,
+      "correct": true,
+      "context_limit": 262144
+    },
+    {
+      "turn": 10,
+      "request_bytes": 11025,
+      "input_tokens": 4223,
+      "latency_seconds": 12.866946084192023,
+      "correct": true,
+      "context_limit": 262144
+    }
+  ],
+  "assessment": "acceptable",
+  "compaction": {
+    "framework_hook": "pydantic_ai.capabilities.ProcessHistory",
+    "custom_processor_source_lines": 34,
+    "keep_recent_tool_pairs": 2,
+    "original_messages": 54,
+    "compacted_messages": 24,
+    "original_payload_bytes": 28584,
+    "compacted_payload_bytes": 11957,
+    "full_input_tokens": 4223,
+    "compacted_input_tokens": 4771,
+    "token_reduction": -548,
+    "compacted_latency_seconds": 132.51410837494768,
+    "correct": true,
+    "context_retention": "preserved",
+    "failure_detail": null
+  }
+}
