@@ -1,6 +1,7 @@
 .git
 .venv
 node_modules
+backend/node_modules
 .pytest_cache
 .ruff_cache
 .ty_cache

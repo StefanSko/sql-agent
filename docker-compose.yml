@@ -42,7 +42,9 @@ services:
       retries: 20
 
   agent-api:
-    build: .
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
     depends_on:
       ollama-init:
         condition: service_completed_successfully

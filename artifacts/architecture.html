@@ -159,7 +159,7 @@
           <div class="triad">
             <div><b>Pressure</b>Probe MCP ergonomics without adding deployment and transport failure modes.</div>
             <div><b>Choice</b>Wrap FastMCP directly with <code>MCPToolset</code>.</div>
-            <div><b>Consequence</b>Tool contracts remain portable; local deployment stays one process. <a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/exposure.py#L24" data-code-ref="../src/sql_agent/exposure.py#L24">source ↗</a></div>
+            <div><b>Consequence</b>Tool contracts remain portable; local deployment stays one process. <a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/exposure.py#L24" data-code-ref="../backend/src/sql_agent/exposure.py#L24">source ↗</a></div>
           </div>
         </article>
         <article class="decision">
@@ -167,7 +167,7 @@
           <div class="triad">
             <div><b>Pressure</b>Schema discovery costs model turns and tokens.</div>
             <div><b>Choice</b>Make three exposure modes interchangeable at one seam.</div>
-            <div><b>Consequence</b>Prefetched wins the bounded matrix while held-out schemas still pass. <a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/exposure.py#L24" data-code-ref="../src/sql_agent/exposure.py#L24">source ↗</a></div>
+            <div><b>Consequence</b>Prefetched wins the bounded matrix while held-out schemas still pass. <a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/exposure.py#L24" data-code-ref="../backend/src/sql_agent/exposure.py#L24">source ↗</a></div>
           </div>
         </article>
         <article class="decision">
@@ -175,7 +175,7 @@
           <div class="triad">
             <div><b>Pressure</b>“Success + truncated + error” cannot safely hide in booleans or anonymous JSON.</div>
             <div><b>Choice</b>Frozen dataclasses and <code>QueryOk | QueryTruncated | QueryRejected</code>.</div>
-            <div><b>Consequence</b>Every interface names its possible state. <a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/types.py#L42" data-code-ref="../src/sql_agent/types.py#L42">source ↗</a></div>
+            <div><b>Consequence</b>Every interface names its possible state. <a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/types.py#L42" data-code-ref="../backend/src/sql_agent/types.py#L42">source ↗</a></div>
           </div>
         </article>
         <article class="decision">
@@ -183,7 +183,7 @@
           <div class="triad">
             <div><b>Pressure</b>A read-only transaction alone does not constrain privileged server functions.</div>
             <div><b>Choice</b>Single-statement parsing, DML/DDL scanning, capability denylist, DB read-only mode, timeout, row cap, least-privilege role.</div>
-            <div><b>Consequence</b>Missteps become typed rejections before data crosses the tool boundary. <a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/db_mcp.py#L113" data-code-ref="../src/sql_agent/db_mcp.py#L113">source ↗</a></div>
+            <div><b>Consequence</b>Missteps become typed rejections before data crosses the tool boundary. <a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/db_mcp.py#L113" data-code-ref="../backend/src/sql_agent/db_mcp.py#L113">source ↗</a></div>
           </div>
         </article>
         <article class="decision">
@@ -191,7 +191,7 @@
           <div class="triad">
             <div><b>Pressure</b>Streaming tool and text events by hand expands protocol ownership.</div>
             <div><b>Choice</b>Delegate event adaptation to <code>AGUIAdapter</code>; keep a frozen raw-SSE control.</div>
-            <div><b>Consequence</b>Richer event semantics and less orchestration code, with a more capable browser client. <a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/app.py#L54" data-code-ref="../src/sql_agent/app.py#L54">source ↗</a></div>
+            <div><b>Consequence</b>Richer event semantics and less orchestration code, with a more capable browser client. <a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/app.py#L54" data-code-ref="../backend/src/sql_agent/app.py#L54">source ↗</a></div>
           </div>
         </article>
         <article class="decision">
@@ -199,7 +199,7 @@
           <div class="triad">
             <div><b>Pressure</b>Full resend grows, but lossy compaction can cost more tokens or semantics.</div>
             <div><b>Choice</b>Attach immutable <code>ProcessHistory</code> only through an explicit policy.</div>
-            <div><b>Consequence</b>Default remains simple; the hook is ready when evidence justifies it. <a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/history.py#L19" data-code-ref="../src/sql_agent/history.py#L19">source ↗</a></div>
+            <div><b>Consequence</b>Default remains simple; the hook is ready when evidence justifies it. <a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/history.py#L19" data-code-ref="../backend/src/sql_agent/history.py#L19">source ↗</a></div>
           </div>
         </article>
       </div>
@@ -216,10 +216,10 @@
     <section class="shell" id="sources">
       <div class="section-head"><h2>Source trail</h2><p>Start here to verify the diagram against implementation.</p></div>
       <div class="sources">
-        <article class="source"><a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/app.py#L29" data-code-ref="../src/sql_agent/app.py#L29"><code>src/sql_agent/app.py:L29</code></a><p>Composition root, AG-UI route, per-request dependencies, answer bridge.</p></article>
-        <article class="source"><a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/agent.py#L52" data-code-ref="../src/sql_agent/agent.py#L52"><code>src/sql_agent/agent.py:L52</code></a><p>Typed agent construction and measured run path.</p></article>
-        <article class="source"><a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/db_mcp.py#L168" data-code-ref="../src/sql_agent/db_mcp.py#L168"><code>src/sql_agent/db_mcp.py:L168</code></a><p>FastMCP tool surface and call tracing boundary.</p></article>
-        <article class="source"><a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/types.py#L19" data-code-ref="../src/sql_agent/types.py#L19"><code>src/sql_agent/types.py:L19</code></a><p>Frozen schema, query-result, and answer contracts.</p></article>
+        <article class="source"><a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/app.py#L29" data-code-ref="../backend/src/sql_agent/app.py#L29"><code>src/sql_agent/app.py:L29</code></a><p>Composition root, AG-UI route, per-request dependencies, answer bridge.</p></article>
+        <article class="source"><a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/agent.py#L52" data-code-ref="../backend/src/sql_agent/agent.py#L52"><code>src/sql_agent/agent.py:L52</code></a><p>Typed agent construction and measured run path.</p></article>
+        <article class="source"><a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/db_mcp.py#L168" data-code-ref="../backend/src/sql_agent/db_mcp.py#L168"><code>src/sql_agent/db_mcp.py:L168</code></a><p>FastMCP tool surface and call tracing boundary.</p></article>
+        <article class="source"><a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/types.py#L19" data-code-ref="../backend/src/sql_agent/types.py#L19"><code>src/sql_agent/types.py:L19</code></a><p>Frozen schema, query-result, and answer contracts.</p></article>
       </div>
     </section>
   </main>

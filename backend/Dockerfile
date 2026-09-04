@@ -6,7 +6,8 @@ ENV UV_COMPILE_BYTECODE=1 \
 
 WORKDIR /app
 COPY pyproject.toml uv.lock README.md ./
-COPY src ./src
+COPY backend/src ./backend/src
+COPY frontend ./frontend
 RUN uv sync --frozen --no-dev
 
 ENV PATH="/app/.venv/bin:$PATH"

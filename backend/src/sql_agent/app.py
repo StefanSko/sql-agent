@@ -23,7 +23,7 @@ from sql_agent.exposure import prepare_exposure
 from sql_agent.settings import Settings
 from sql_agent.types import AgentAnswer
 
-_STATIC_INDEX = Path(__file__).parent / "static" / "index.html"
+_FRONTEND_INDEX = Path(__file__).parents[3] / "frontend" / "index.html"
 
 
 def create_app(
@@ -45,7 +45,7 @@ def create_app(
 
     @app.get("/", response_class=HTMLResponse)
     async def index() -> str:
-        return _STATIC_INDEX.read_text(encoding="utf-8")
+        return _FRONTEND_INDEX.read_text(encoding="utf-8")
 
     @app.get("/health")
     async def health() -> dict[str, str]:

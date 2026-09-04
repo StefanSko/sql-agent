@@ -58,7 +58,7 @@ AG-UI and Ollama boundaries remain network protocols.
   endpoint (`OpenAIChatModel` + `OpenAIProvider(base_url=...)`); all
   names/URLs come from `pydantic-settings`.
 - **db** — real Postgres in prod; PGlite behind a TCP socket
-  (`@electric-sql/pglite-socket` via `pglite_manager.js`) for tests, so the
+  (`@electric-sql/pglite-socket` via `backend/pglite_manager.js`) for tests, so the
   asyncpg wire path is real without a Postgres install.
 
 Control comparison for P1/P4: M0 must preserve the previous hand-rolled

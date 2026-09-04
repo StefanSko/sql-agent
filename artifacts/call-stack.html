@@ -87,37 +87,37 @@
         <article class="frame">
           <div class="step">01</div><div class="layer"><small>browser</small><strong>chat form</strong></div>
           <div class="action"><h3>Capture a question and resend canonical history</h3><p>The browser stores user, assistant, and tool messages keyed by AG-UI IDs, then POSTs the run envelope.</p></div>
-          <div class="handoff"><small>handoff</small><span class="token">AG-UI RunAgentInput JSON</span><a class="jump" href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/static/index.html#L100" data-code-ref="../src/sql_agent/static/index.html#L100">static/index.html:L100 ↗</a></div>
+          <div class="handoff"><small>handoff</small><span class="token">AG-UI RunAgentInput JSON</span><a class="jump" href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/static/index.html#L100" data-code-ref="../frontend/index.html#L100">static/index.html:L100 ↗</a></div>
         </article>
         <article class="frame">
           <div class="step">02</div><div class="layer"><small>HTTP edge</small><strong>app.agui</strong></div>
           <div class="action"><h3>Bind request-scoped dependencies</h3><p>FastAPI extracts or creates a request ID. The composition root holds settings and the MCP object, but only <code>RequestDeps</code> reaches model-visible callbacks.</p></div>
-          <div class="handoff"><small>handoff</small><span class="token">RequestDeps(request_id)</span><a class="jump" href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/app.py#L54" data-code-ref="../src/sql_agent/app.py#L54">app.py:L54 ↗</a></div>
+          <div class="handoff"><small>handoff</small><span class="token">RequestDeps(request_id)</span><a class="jump" href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/app.py#L54" data-code-ref="../backend/src/sql_agent/app.py#L54">app.py:L54 ↗</a></div>
         </article>
         <article class="frame">
           <div class="step">03</div><div class="layer"><small>policy seam</small><strong>prepare_exposure</strong></div>
           <div class="action"><h3>Select exactly what the model can discover</h3><p>The mode produces filtered tools plus instructions. Prefetched mode converts MCP catalog output into typed context and leaves only <code>run_query</code> exposed.</p></div>
-          <div class="handoff"><small>handoff</small><span class="token">ExposureSetup</span><a class="jump" href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/exposure.py#L24" data-code-ref="../src/sql_agent/exposure.py#L24">exposure.py:L24 ↗</a></div>
+          <div class="handoff"><small>handoff</small><span class="token">ExposureSetup</span><a class="jump" href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/exposure.py#L24" data-code-ref="../backend/src/sql_agent/exposure.py#L24">exposure.py:L24 ↗</a></div>
         </article>
         <article class="frame">
           <div class="step">04</div><div class="layer"><small>agent</small><strong>AGUIAdapter</strong></div>
           <div class="action"><h3>Decode history and run the typed Pydantic agent</h3><p>The adapter maps protocol messages to <code>ModelMessage</code>. Pydantic AI enforces <code>Agent[RequestDeps, AgentAnswer]</code> and orchestrates model/tool turns.</p></div>
-          <div class="handoff"><small>handoff</small><span class="token">ModelMessage[] + ToolCallPart</span><a class="jump" href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/agent.py#L52" data-code-ref="../src/sql_agent/agent.py#L52">agent.py:L52 ↗</a></div>
+          <div class="handoff"><small>handoff</small><span class="token">ModelMessage[] + ToolCallPart</span><a class="jump" href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/agent.py#L52" data-code-ref="../backend/src/sql_agent/agent.py#L52">agent.py:L52 ↗</a></div>
         </article>
         <article class="frame">
           <div class="step">05</div><div class="layer"><small>tool boundary</small><strong>FastMCP</strong></div>
           <div class="action"><h3>Dispatch a declared tool—not arbitrary Python</h3><p><code>MCPToolset</code> calls the in-process FastMCP server. Tool declarations return <code>TableNames</code>, <code>TableSchema</code>, <code>Catalog</code>, or <code>QueryResult</code>.</p></div>
-          <div class="handoff"><small>handoff</small><span class="token">run_query(sql: str)</span><a class="jump" href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/db_mcp.py#L168" data-code-ref="../src/sql_agent/db_mcp.py#L168">db_mcp.py:L168 ↗</a></div>
+          <div class="handoff"><small>handoff</small><span class="token">run_query(sql: str)</span><a class="jump" href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/db_mcp.py#L168" data-code-ref="../backend/src/sql_agent/db_mcp.py#L168">db_mcp.py:L168 ↗</a></div>
         </article>
         <article class="frame">
           <div class="step">06</div><div class="layer"><small>trust edge</small><strong>_Database</strong></div>
           <div class="action"><h3>Parse, constrain, execute, cap</h3><p>The adapter rejects unsafe shapes before connecting, then uses a read-only transaction, local timeout, cursor stop at <code>row_cap + 1</code>, and sanitized exceptions.</p></div>
-          <div class="handoff"><small>handoff</small><span class="token">QueryOk | QueryTruncated | QueryRejected</span><a class="jump" href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/db_mcp.py#L113" data-code-ref="../src/sql_agent/db_mcp.py#L113">db_mcp.py:L113 ↗</a></div>
+          <div class="handoff"><small>handoff</small><span class="token">QueryOk | QueryTruncated | QueryRejected</span><a class="jump" href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/db_mcp.py#L113" data-code-ref="../backend/src/sql_agent/db_mcp.py#L113">db_mcp.py:L113 ↗</a></div>
         </article>
         <article class="frame">
           <div class="step">07</div><div class="layer"><small>egress</small><strong>AG-UI stream</strong></div>
           <div class="action"><h3>Stream tool lifecycle and final text once</h3><p>The adapter emits protocol events. Completion bridges structured <code>AgentAnswer.answer</code> only when equivalent text was not already streamed in the new turn.</p></div>
-          <div class="handoff"><small>handoff</small><span class="token">TEXT_MESSAGE_* / TOOL_CALL_*</span><a class="jump" href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/app.py#L73" data-code-ref="../src/sql_agent/app.py#L73">app.py:L73 ↗</a></div>
+          <div class="handoff"><small>handoff</small><span class="token">TEXT_MESSAGE_* / TOOL_CALL_*</span><a class="jump" href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/app.py#L73" data-code-ref="../backend/src/sql_agent/app.py#L73">app.py:L73 ↗</a></div>
         </article>
       </div>
       <div class="return-band"><b>RETURN PATH</b><span><code>asyncpg.Record → QueryRow → QueryResult → ToolReturnPart → AgentAnswer → AG-UI event → DOM text</code></span></div>
@@ -126,10 +126,10 @@
     <section class="wrap">
       <div class="head"><h2>The interface ledger</h2><p>These are the stable shapes that let modules change independently without passing ad-hoc dictionaries through the core.</p></div>
       <div class="types">
-        <article class="type"><small>schema family</small><h3>TableNames → TableSchema → Catalog</h3><p>Immutable schema descriptions. Catalog is either returned as a tool result or serialized into prefetched instructions.</p><a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/types.py#L19" data-code-ref="../src/sql_agent/types.py#L19">types.py:L19–39 ↗</a></article>
-        <article class="type"><small>query state machine</small><h3>QueryResult</h3><p>A tagged union makes normal rows, bounded truncation, and safe rejection explicit. No nullable status dictionary.</p><a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/types.py#L51" data-code-ref="../src/sql_agent/types.py#L51">types.py:L51–70 ↗</a></article>
-        <article class="type"><small>model contract</small><h3>Agent[RequestDeps, AgentAnswer]</h3><p>Input dependencies expose only correlation metadata. Structured output carries prose plus evidence strings used by workload oracles.</p><a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/agent.py#L33" data-code-ref="../src/sql_agent/agent.py#L33">agent.py:L33–74 ↗</a></article>
-        <article class="type"><small>measurement envelope</small><h3>AgentRun → RunRecord</h3><p>The measured path retains typed answer, tool calls, query outcomes, model messages, latency, usage, and retries for ranking.</p><a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/agent.py#L38" data-code-ref="../src/sql_agent/agent.py#L38">agent.py:L38–49 ↗</a></article>
+        <article class="type"><small>schema family</small><h3>TableNames → TableSchema → Catalog</h3><p>Immutable schema descriptions. Catalog is either returned as a tool result or serialized into prefetched instructions.</p><a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/types.py#L19" data-code-ref="../backend/src/sql_agent/types.py#L19">types.py:L19–39 ↗</a></article>
+        <article class="type"><small>query state machine</small><h3>QueryResult</h3><p>A tagged union makes normal rows, bounded truncation, and safe rejection explicit. No nullable status dictionary.</p><a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/types.py#L51" data-code-ref="../backend/src/sql_agent/types.py#L51">types.py:L51–70 ↗</a></article>
+        <article class="type"><small>model contract</small><h3>Agent[RequestDeps, AgentAnswer]</h3><p>Input dependencies expose only correlation metadata. Structured output carries prose plus evidence strings used by workload oracles.</p><a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/agent.py#L33" data-code-ref="../backend/src/sql_agent/agent.py#L33">agent.py:L33–74 ↗</a></article>
+        <article class="type"><small>measurement envelope</small><h3>AgentRun → RunRecord</h3><p>The measured path retains typed answer, tool calls, query outcomes, model messages, latency, usage, and retries for ranking.</p><a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/agent.py#L38" data-code-ref="../backend/src/sql_agent/agent.py#L38">agent.py:L38–49 ↗</a></article>
       </div>
     </section>
 
@@ -146,12 +146,12 @@
     <section class="wrap">
       <div class="head"><h2>Code index</h2><p>Direct pointers for tracing adjacent call paths.</p></div>
       <div class="code-index">
-        <article><a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/static/index.html#L50" data-code-ref="../src/sql_agent/static/index.html#L50">static/index.html:L50</a><b>AG-UI event reducer</b><p>Maps message and tool IDs into canonical history.</p></article>
-        <article><a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/app.py#L29" data-code-ref="../src/sql_agent/app.py#L29">app.py:L29</a><b>Composition root</b><p>Settings, DB MCP, model, route, and usage sink.</p></article>
-        <article><a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/exposure.py#L18" data-code-ref="../src/sql_agent/exposure.py#L18">exposure.py:L18</a><b>Policy output</b><p>Filtered toolset plus per-run instructions.</p></article>
-        <article><a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/mcp_client.py#L7" data-code-ref="../src/sql_agent/mcp_client.py#L7">mcp_client.py:L7</a><b>MCP decode boundary</b><p>Pydantic TypeAdapter parses structured tool content.</p></article>
-        <article><a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/workload.py#L29" data-code-ref="../src/sql_agent/workload.py#L29">workload.py:L29</a><b>Correctness oracle</b><p>Requires both queried value and answer evidence.</p></article>
-        <article><a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/metrics.py#L116" data-code-ref="../src/sql_agent/metrics.py#L116">metrics.py:L116</a><b>Ranking boundary</b><p>Eligibility first; lexicographic score second.</p></article>
+        <article><a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/static/index.html#L50" data-code-ref="../frontend/index.html#L50">static/index.html:L50</a><b>AG-UI event reducer</b><p>Maps message and tool IDs into canonical history.</p></article>
+        <article><a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/app.py#L29" data-code-ref="../backend/src/sql_agent/app.py#L29">app.py:L29</a><b>Composition root</b><p>Settings, DB MCP, model, route, and usage sink.</p></article>
+        <article><a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/exposure.py#L18" data-code-ref="../backend/src/sql_agent/exposure.py#L18">exposure.py:L18</a><b>Policy output</b><p>Filtered toolset plus per-run instructions.</p></article>
+        <article><a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/mcp_client.py#L7" data-code-ref="../backend/src/sql_agent/mcp_client.py#L7">mcp_client.py:L7</a><b>MCP decode boundary</b><p>Pydantic TypeAdapter parses structured tool content.</p></article>
+        <article><a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/workload.py#L29" data-code-ref="../backend/src/sql_agent/workload.py#L29">workload.py:L29</a><b>Correctness oracle</b><p>Requires both queried value and answer evidence.</p></article>
+        <article><a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/metrics.py#L116" data-code-ref="../backend/src/sql_agent/metrics.py#L116">metrics.py:L116</a><b>Ranking boundary</b><p>Eligibility first; lexicographic score second.</p></article>
       </div>
     </section>
   </main>

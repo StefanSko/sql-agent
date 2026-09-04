@@ -36,7 +36,7 @@ from sql_agent.settings import Dsn, Settings
 from sql_agent.types import ExposureMode, QueryOk, QueryRejected, QueryResult
 from sql_agent.workload import WORKLOAD_VERSION, WorkloadCase, load_workload
 
-_ROOT = Path(__file__).parents[2]
+_ROOT = Path(__file__).parents[3]
 
 
 @dataclass(frozen=True)
@@ -117,7 +117,7 @@ async def run_experiment(
         directory = Path(temporary)
         pglite = await start_pglite(
             PGliteConfig(
-                manager_path=_ROOT / "pglite_manager.js",
+                manager_path=_ROOT / "backend" / "pglite_manager.js",
                 database_directory=directory / "db",
                 ready_file=directory / "ready",
             )

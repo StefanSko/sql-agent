@@ -31,7 +31,7 @@ def pglite_dsn(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Dsn]:
     process = subprocess.Popen(
         [
             "node",
-            str(ROOT / "pglite_manager.js"),
+            str(ROOT / "backend" / "pglite_manager.js"),
             "--db",
             str(directory / "db"),
             "--port",

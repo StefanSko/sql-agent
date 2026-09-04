@@ -5,11 +5,22 @@ in-process MCP, and AG-UI against a concrete hand-rolled control. The normative
 scope and experiment rules are in [`plan.md`](plan.md); conclusions are in
 [`notes/verdict.md`](notes/verdict.md).
 
+## Repository layout
+
+- `backend/src/sql_agent/` — FastAPI, Pydantic AI, and in-process MCP runtime
+- `frontend/` — standalone browser client served by the backend
+- `backend/pglite_manager.js` — backend test-database process
+- `tests/` — unit, integration, and opt-in end-to-end coverage
+- `data/` — shared schemas, seeds, and experiment workloads
+
+Python project metadata remains at the root so all backend and cross-boundary
+commands continue to use a single `uv` environment.
+
 ## Setup
 
 ```bash
 uv sync --all-groups
-npm ci
+npm --prefix backend ci
 cp .env.example .env  # then set the required values
 ```
 

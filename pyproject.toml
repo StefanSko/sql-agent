@@ -25,6 +25,9 @@ sql-agent-multiturn = "sql_agent.multiturn_experiment:main"
 requires = ["uv_build>=0.8.17,<0.9.0"]
 build-backend = "uv_build"
 
+[tool.uv.build-backend]
+module-root = "backend/src"
+
 [tool.pytest.ini_options]
 addopts = "-m 'not e2e'"
 asyncio_mode = "auto"
@@ -34,6 +37,7 @@ markers = [
 
 [tool.ruff]
 line-length = 100
+src = ["backend/src", "."]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]

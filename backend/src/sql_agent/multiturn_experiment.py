@@ -35,7 +35,7 @@ from sql_agent.settings import Dsn, Settings
 from sql_agent.types import ExposureMode
 from sql_agent.workload import load_workload
 
-_ROOT = Path(__file__).parents[2]
+_ROOT = Path(__file__).parents[3]
 _JOURNEY_PATH = _ROOT / "data" / "workloads" / "multiturn-v1.json"
 
 
@@ -217,7 +217,7 @@ async def run_multiturn_experiment(settings: Settings) -> MultiTurnArtifact:
         directory = Path(temporary)
         pglite = await start_pglite(
             PGliteConfig(
-                manager_path=_ROOT / "pglite_manager.js",
+                manager_path=_ROOT / "backend" / "pglite_manager.js",
                 database_directory=directory / "db",
                 ready_file=directory / "ready",
             )

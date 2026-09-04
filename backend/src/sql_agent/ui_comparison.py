@@ -26,7 +26,7 @@ from sql_agent.settings import Settings
 from sql_agent.types import ExposureMode
 from sql_agent.workload import load_workload
 
-_ROOT = Path(__file__).parents[2]
+_ROOT = Path(__file__).parents[3]
 
 
 @dataclass(frozen=True)
@@ -65,7 +65,7 @@ async def run_ui_comparison(settings: Settings) -> UIComparisonArtifact:
         directory = Path(temporary)
         pglite = await start_pglite(
             PGliteConfig(
-                manager_path=_ROOT / "pglite_manager.js",
+                manager_path=_ROOT / "backend" / "pglite_manager.js",
                 database_directory=directory / "db",
                 ready_file=directory / "ready",
             )
@@ -165,9 +165,12 @@ async def run_ui_comparison(settings: Settings) -> UIComparisonArtifact:
             SurfaceObservation(
                 variant="Pydantic AI + AG-UI",
                 python_nonblank_lines=_line_count(
-                    (_ROOT / "src/sql_agent/agent.py", _ROOT / "src/sql_agent/app.py")
+                    (
+                        _ROOT / "backend/src/sql_agent/agent.py",
+                        _ROOT / "backend/src/sql_agent/app.py",
+                    )
                 ),
-                browser_nonblank_lines=_line_count((_ROOT / "src/sql_agent/static/index.html",)),
+                browser_nonblank_lines=_line_count((_ROOT / "frontend/index.html",)),
             ),
             SurfaceObservation(
                 variant="hand-rolled + raw SSE",

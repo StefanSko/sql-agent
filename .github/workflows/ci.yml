@@ -16,8 +16,9 @@ jobs:
         with:
           node-version: 22
           cache: npm
+          cache-dependency-path: backend/package-lock.json
       - run: uv sync --all-groups --frozen
-      - run: npm ci
+      - run: npm --prefix backend ci
       - run: uv run ruff format --check .
       - run: uv run ruff check .
       - run: uv run ty check

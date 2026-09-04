@@ -8,7 +8,7 @@ from pydantic import TypeAdapter
 from sql_agent.types import AgentAnswer, JsonScalar, QueryOk, QueryResult, QueryTruncated
 
 WORKLOAD_VERSION = "1"
-_WORKLOAD_PATH = Path(__file__).parents[2] / "data" / "workloads" / "v1.json"
+_WORKLOAD_PATH = Path(__file__).parents[3] / "data" / "workloads" / "v1.json"
 
 
 @dataclass(frozen=True)

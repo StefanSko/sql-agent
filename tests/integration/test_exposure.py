@@ -73,7 +73,7 @@ async def test_all_exposure_modes_are_schema_generic_on_held_out_database(pglite
 
 
 def test_production_prompts_and_tool_descriptions_are_schema_generic() -> None:
-    production = Path("src/sql_agent")
+    production = Path("backend/src/sql_agent")
     forbidden = ("bike", "stations", "riders", "trips", "artifacts")
     for path in production.rglob("*.py"):
         text = path.read_text(encoding="utf-8").lower()
