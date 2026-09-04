@@ -8,7 +8,7 @@ from typing import Literal
 
 from pydantic import TypeAdapter
 
-from sql_agent.types import ExposureMode
+from sql_agent.benchmark.types import ExposureMode
 
 
 class FailureKind(StrEnum):
@@ -80,7 +80,7 @@ class VariantChecks:
 
 
 @dataclass(frozen=True)
-class ExperimentChecks:
+class BenchmarkChecks:
     variants: tuple[VariantChecks, ...]
 
     def for_mode(self, mode: ExposureMode) -> VariantChecks | None:
@@ -105,7 +105,7 @@ class VariantScore:
 
 
 @dataclass(frozen=True)
-class ExperimentSummary:
+class BenchmarkSummary:
     eligible: tuple[ExposureMode, ...]
     winners: tuple[ExposureMode, ...]
     selected: ExposureMode | None
@@ -114,21 +114,19 @@ class ExperimentSummary:
 
 
 def rank_variants(
-    records: list[RunRecord] | tuple[RunRecord, ...], checks: ExperimentChecks
-) -> ExperimentSummary:
+    records: list[RunRecord] | tuple[RunRecord, ...], checks: BenchmarkChecks
+) -> BenchmarkSummary:
     cases = tuple(sorted({record.case_id for record in records}))
     scores = {mode: _score(mode, records, cases) for mode in ExposureMode}
     eligible = tuple(
         mode for mode in ExposureMode if _is_eligible(mode, records, cases, checks.for_mode(mode))
     )
     if not eligible:
-        return ExperimentSummary(
-            eligible=(), winners=(), selected=None, is_tie=False, scores=scores
-        )
+        return BenchmarkSummary(eligible=(), winners=(), selected=None, is_tie=False, scores=scores)
 
     best_key = min(scores[mode].ranking_key for mode in eligible)
     winners = tuple(mode for mode in eligible if scores[mode].ranking_key == best_key)
-    return ExperimentSummary(
+    return BenchmarkSummary(
         eligible=eligible,
         winners=winners,
         selected=winners[0],

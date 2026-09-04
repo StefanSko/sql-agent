@@ -56,18 +56,16 @@ red→green loop.
   or DSNs. Because db-mcp is in-process, `agent-api` holds the DSN only for
   db-mcp construction; never put it in model-visible dependencies, prompts,
   MCP arguments, or results.
-- All DB access goes through the in-process MCP server object, including in
-  tests above M1.
-- Tests that need a database use the PGlite fixture; no test requires a
-  local Postgres install.
-- Follow plan.md milestones in order; if reality contradicts plan.md,
-  update plan.md in the same commit. For M1–M5, a milestone is complete only
-  when its vertical acceptance path crosses every implemented boundary; unit
-  tests alone do not complete a slice. M6 synthesizes accepted evidence.
-- Keep production agent instructions, tool descriptions, and exposure logic
-  schema-generic. Bike-share and held-out-domain names belong only in seed
-  data, workload fixtures, and expected test results.
-- This repo's purpose is probing the Pydantic AI + AG-UI design (see
-  plan.md). Any framework friction, workaround, or source-dive gets a
-  dated one-liner in `notes/probelog.md` in the same commit — the M6
-  verdict is built from that log, not from memory.
+- All DB access goes through the in-process FastMCP server object. FastMCP 4
+  clients use modern, stateless MCP v2 rather than the legacy initialize/session
+  protocol.
+- Tests that need a database use the PGlite fixture; no test requires a local
+  Postgres install.
+- Keep production agent instructions and tool descriptions schema-generic.
+  Dataset names belong only in seed data, workload fixtures, and expected test
+  results.
+- Benchmark-only exposure variants, metrics, and PGlite orchestration belong
+  under `sql_agent.benchmark`; application runtime must not import that package.
+- Update `plan.md` when application architecture changes. Log framework
+  friction, workarounds, and source-dives as dated one-liners in
+  `notes/probelog.md`.

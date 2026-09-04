@@ -1,36 +1,55 @@
 # sql-agent
 
-A schema-generic natural-language-to-SQL application used to probe Pydantic AI,
-in-process MCP, and AG-UI against a concrete hand-rolled control. The normative
-scope and experiment rules are in [`plan.md`](plan.md); conclusions are in
-[`notes/verdict.md`](notes/verdict.md).
+A small schema-generic natural-language-to-SQL application built on Pydantic AI,
+AG-UI, and FastMCP 4.
 
-## Repository layout
+## Architecture
 
-- `backend/src/sql_agent/` — FastAPI and Pydantic AI application runtime
-- `backend/src/sql_agent/mcp/` — in-process MCP server, client decoding, and exposure policy
-- `frontend/` — standalone browser client served by the backend
-- `backend/pglite_manager.js` — backend test-database process
-- `tests/` — unit, integration, and opt-in end-to-end coverage
-- `data/` — shared schemas, seeds, and experiment workloads
+```text
+browser ──AG-UI/SSE──> FastAPI ──> Pydantic AI ──MCP v2──> FastMCP ──> PostgreSQL
+                                      │
+                                      └──────────────> Ollama
+```
 
-Python project metadata remains at the root so all backend and cross-boundary
-commands continue to use a single `uv` environment.
+The application has one runtime path:
 
-## Setup
+- `backend/src/sql_agent/app.py` exposes the UI and `/agui` endpoint.
+- `backend/src/sql_agent/agent.py` defines the agent and its fixed database tool surface:
+  `get_catalog` and `run_query`.
+- `backend/src/sql_agent/mcp/server.py` owns all database access and SQL safety.
+- FastMCP 4 negotiates modern MCP v2 (`server/discover`) in stateless mode; no protocol session is
+  retained between runs and no sidecar process is required.
+- `frontend/` is the small AG-UI browser client.
+
+Benchmark machinery is isolated under `backend/src/sql_agent/benchmark/`. It can
+compare historical granular, catalog, and prefetched tool surfaces, but none of those
+modes leak into application settings or request handling.
+
+## Setup and run
 
 ```bash
 uv sync --all-groups
 npm --prefix backend ci
-cp .env.example .env  # then set the required values
-```
-
-Run the app:
-
-```bash
+cp .env.example .env  # configure the database and Ollama
 uv run sql-agent
-# http://127.0.0.1:8000
 ```
+
+Open <http://127.0.0.1:8000>.
+
+## Configuration
+
+Required:
+
+- `SQL_AGENT_DSN`
+- `SQL_AGENT_OLLAMA_BASE_URL`
+- `SQL_AGENT_MODEL_NAME`
+- `SQL_AGENT_OLLAMA_API_KEY`
+
+Optional:
+
+- `SQL_AGENT_ROW_CAP` (default `200`)
+- `SQL_AGENT_STATEMENT_TIMEOUT_MS` (default `5000`)
+- `SQL_AGENT_AGUI_MODEL_THINKING` (default `false`)
 
 ## Validation
 
@@ -38,43 +57,21 @@ uv run sql-agent
 uv run ruff format . && uv run ruff check . && uv run ty check && uv run pytest
 ```
 
-The default suite starts PGlite over a local TCP socket and does not need Ollama,
-Docker, or PostgreSQL. Real-provider tests are explicit:
+The default suite uses PGlite and model doubles. The real-model smoke test is opt-in:
 
 ```bash
 set -a; source .env.e2e; set +a
 uv run pytest -m e2e tests/e2e/test_ollama_smoke.py
 ```
 
-Run the exposure experiment after starting Ollama:
+## Benchmark
+
+The benchmark is development tooling, not a second application path:
 
 ```bash
-uv run sql-agent-experiment run --repetitions 3
-uv run sql-agent-experiment summarize experiments/records/latest.json
-uv run sql-agent-multiturn
-uv run python -m sql_agent.ui_comparison
+uv run sql-agent-benchmark run --repetitions 3
+uv run sql-agent-benchmark summarize benchmarks/records/latest.json
 ```
 
-The composed topology is defined in `docker-compose.yml`:
-
-```bash
-docker compose --profile postgres up --build --wait
-SQL_AGENT_COMPOSED_URL=http://127.0.0.1:8000 \
-  uv run pytest -m e2e tests/e2e/test_composed_app.py
-```
-
-`notes/verdict.md` and `experiments/composed/` state the execution limits of the
-current machine; they do not claim that the full topology ran here.
-
-The reconstructed immutable control and its run instructions are under
-[`baseline/hand_rolled/`](baseline/hand_rolled/).
-
-## Visual field guide
-
-Standalone visual artifacts are under [`artifacts/`](artifacts/):
-
-- [Architecture and decision motivation](artifacts/architecture.html)
-- [Call stack and interface type journey](artifacts/call-stack.html)
-- [Benchmark design, statistics, and result](artifacts/benchmarks.html)
-- [Motivated verdict and visual improvement paths](artifacts/verdict.html)
-- [Five proposed experiments to validate or overturn the verdict](artifacts/validation/index.html)
+Its versioned workloads and historical records live in `data/workloads/` and
+`benchmarks/`.

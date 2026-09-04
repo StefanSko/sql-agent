@@ -5,10 +5,7 @@ from typing import NewType
 from pydantic import HttpUrl, PositiveInt, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from sql_agent.types import ExposureMode
-
 Dsn = NewType("Dsn", str)
-ExposureName = ExposureMode
 
 
 class Settings(BaseSettings):
@@ -24,7 +21,6 @@ class Settings(BaseSettings):
     ollama_base_url: HttpUrl
     model_name: str
     ollama_api_key: SecretStr
-    exposure_mode: ExposureMode
     row_cap: PositiveInt = 200
     statement_timeout_ms: PositiveInt = 5_000
     agui_model_thinking: bool = False

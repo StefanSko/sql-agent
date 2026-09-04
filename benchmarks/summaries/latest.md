@@ -1,4 +1,4 @@
-# Exposure experiment summary
+# Exposure benchmark summary
 
 - Executed: 2026-08-27T11:36:06.679542+00:00
 - Model: `gemma4:12b-it-q4_K_M` (`4eb23ef187e2c5462566d6a1d3bbbc2f1346d0b4327cbb66d58fffbcc9b2b05c`)
@@ -12,7 +12,7 @@
 | prefetched | yes | 6 | 2.50 | 14.229s | 1654.50 |
 
 - Evidence winner(s): **prefetched**
-- Provisional application mode: **prefetched**
+- Deterministic benchmark selection: **prefetched**
 - Exact tie: **no**
 
 Failed repetitions count against correctness and are excluded from metric medians.

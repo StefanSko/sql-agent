@@ -5,9 +5,8 @@ backend/node_modules
 .pytest_cache
 .ruff_cache
 .ty_cache
-experiments
+benchmarks
 tests
-baseline
 notes
 .env*
 __pycache__

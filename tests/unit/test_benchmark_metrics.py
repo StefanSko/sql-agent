@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from sql_agent.metrics import (
+from sql_agent.benchmark.metrics import (
+    BenchmarkChecks,
     CompleteMetrics,
-    ExperimentChecks,
     FailureKind,
     RunFailed,
     RunRecord,
@@ -12,7 +12,7 @@ from sql_agent.metrics import (
     records_from_json,
     records_to_json,
 )
-from sql_agent.types import ExposureMode
+from sql_agent.benchmark.types import ExposureMode
 
 
 def success(
@@ -57,8 +57,8 @@ def failure(mode: ExposureMode, case: str, repetition: int, kind: FailureKind) -
     )
 
 
-def all_checks(*, prefetched_heldout: bool = True) -> ExperimentChecks:
-    return ExperimentChecks(
+def all_checks(*, prefetched_heldout: bool = True) -> BenchmarkChecks:
+    return BenchmarkChecks(
         variants=tuple(
             VariantChecks(
                 mode=mode,

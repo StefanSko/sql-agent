@@ -3,32 +3,36 @@ from __future__ import annotations
 from typing import cast
 
 import pytest
-from fastmcp import Client
+from fastmcp import Client, FastMCP
 from pydantic import TypeAdapter
 
-from sql_agent.mcp.client import parse_tool_result
-from sql_agent.mcp.server import DbMcp, create_db_mcp
+from sql_agent.benchmark.mcp_result import parse_tool_result
+from sql_agent.mcp.server import create_database_server
 from sql_agent.settings import Dsn
 from sql_agent.types import Catalog, QueryOk, QueryRejected, QueryTruncated, TableNames, TableSchema
 
 
 @pytest.fixture
-def db_mcp(seeded_dsn: Dsn) -> DbMcp:
-    return create_db_mcp(seeded_dsn, row_cap=2, statement_timeout_ms=2_000)
+def db_mcp(seeded_dsn: Dsn) -> FastMCP:
+    return create_database_server(seeded_dsn, row_cap=2, statement_timeout_ms=2_000)
 
 
 @pytest.mark.asyncio
-async def test_list_tables_crosses_in_process_mcp_and_pglite(db_mcp: DbMcp) -> None:
-    async with Client(db_mcp.server) as client:
+async def test_list_tables_crosses_modern_stateless_mcp_and_pglite(db_mcp: FastMCP) -> None:
+    async with Client(db_mcp, mode="auto") as client:
         raw = await client.call_tool("list_tables", {})
+        protocol_version = client.protocol_version
+        initialize_result = client.initialize_result
 
     result = parse_tool_result(raw, TypeAdapter(TableNames))
     assert result.names == ("riders", "stations", "trips")
+    assert protocol_version is not None and protocol_version.startswith("2026-")
+    assert initialize_result is None
 
 
 @pytest.mark.asyncio
-async def test_describe_and_catalog_are_typed(db_mcp: DbMcp) -> None:
-    async with Client(db_mcp.server) as client:
+async def test_describe_and_catalog_are_typed(db_mcp: FastMCP) -> None:
+    async with Client(db_mcp) as client:
         described = parse_tool_result(
             await client.call_tool("describe_table", {"name": "trips"}),
             TypeAdapter(TableSchema),
@@ -41,8 +45,8 @@ async def test_describe_and_catalog_are_typed(db_mcp: DbMcp) -> None:
 
 
 @pytest.mark.asyncio
-async def test_run_query_returns_rows_and_explicit_truncation(db_mcp: DbMcp) -> None:
-    async with Client(db_mcp.server) as client:
+async def test_run_query_returns_rows_and_explicit_truncation(db_mcp: FastMCP) -> None:
+    async with Client(db_mcp) as client:
         aggregate = parse_tool_result(
             await client.call_tool(
                 "run_query",
@@ -69,8 +73,8 @@ async def test_run_query_returns_rows_and_explicit_truncation(db_mcp: DbMcp) -> 
 
 @pytest.mark.asyncio
 async def test_row_cap_stops_reading_before_slow_remaining_rows(seeded_dsn: Dsn) -> None:
-    capped_mcp = create_db_mcp(seeded_dsn, row_cap=2, statement_timeout_ms=100)
-    async with Client(capped_mcp.server) as client:
+    capped_mcp = create_database_server(seeded_dsn, row_cap=2, statement_timeout_ms=100)
+    async with Client(capped_mcp) as client:
         result = parse_tool_result(
             await client.call_tool(
                 "run_query",
@@ -85,9 +89,9 @@ async def test_row_cap_stops_reading_before_slow_remaining_rows(seeded_dsn: Dsn)
 
 @pytest.mark.asyncio
 async def test_run_query_rejects_multiple_statements_even_with_semicolon_in_string(
-    db_mcp: DbMcp,
+    db_mcp: FastMCP,
 ) -> None:
-    async with Client(db_mcp.server) as client:
+    async with Client(db_mcp) as client:
         accepted = parse_tool_result(
             await client.call_tool("run_query", {"sql": "SELECT ';' AS value;"}),
             TypeAdapter(QueryOk | QueryTruncated | QueryRejected),
@@ -102,8 +106,8 @@ async def test_run_query_rejects_multiple_statements_even_with_semicolon_in_stri
 
 
 @pytest.mark.asyncio
-async def test_run_query_rejects_privileged_server_capabilities(db_mcp: DbMcp) -> None:
-    async with Client(db_mcp.server) as client:
+async def test_run_query_rejects_privileged_server_capabilities(db_mcp: FastMCP) -> None:
+    async with Client(db_mcp) as client:
         file_read = parse_tool_result(
             await client.call_tool(
                 "run_query", {"sql": "SELECT pg_read_file('/etc/passwd') AS contents"}
@@ -124,13 +128,13 @@ async def test_run_query_rejects_privileged_server_capabilities(db_mcp: DbMcp) -
 
 @pytest.mark.asyncio
 async def test_nested_write_shapes_are_rejected_before_database_connection() -> None:
-    unreachable = create_db_mcp(Dsn("postgresql://sentinel:secret@127.0.0.1:1/probe"))
+    unreachable = create_database_server(Dsn("postgresql://sentinel:secret@127.0.0.1:1/probe"))
     statements = (
         "WITH removed AS (DELETE FROM records RETURNING id) SELECT * FROM removed",
         "EXPLAIN ANALYZE DELETE FROM records",
     )
 
-    async with Client(unreachable.server) as client:
+    async with Client(unreachable) as client:
         results = tuple(
             [
                 parse_tool_result(
@@ -148,8 +152,8 @@ async def test_nested_write_shapes_are_rejected_before_database_connection() -> 
 
 
 @pytest.mark.asyncio
-async def test_run_query_is_read_only(db_mcp: DbMcp) -> None:
-    async with Client(db_mcp.server) as client:
+async def test_run_query_is_read_only(db_mcp: FastMCP) -> None:
+    async with Client(db_mcp) as client:
         result = parse_tool_result(
             await client.call_tool("run_query", {"sql": "DELETE FROM trips"}),
             TypeAdapter(QueryOk | QueryTruncated | QueryRejected),
@@ -166,8 +170,8 @@ async def test_run_query_is_read_only(db_mcp: DbMcp) -> None:
 
 
 @pytest.mark.asyncio
-async def test_dsn_is_absent_from_mcp_surface(db_mcp: DbMcp, seeded_dsn: Dsn) -> None:
-    async with Client(db_mcp.server) as client:
+async def test_dsn_is_absent_from_mcp_surface(db_mcp: FastMCP, seeded_dsn: Dsn) -> None:
+    async with Client(db_mcp) as client:
         tools = await client.list_tools()
         result = await client.call_tool("list_tables", {})
 

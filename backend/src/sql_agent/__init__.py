@@ -1,1 +1,1 @@
-"""Schema-generic SQL-agent probe."""
+"""Schema-generic SQL agent application."""

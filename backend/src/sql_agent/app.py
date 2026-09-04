@@ -3,23 +3,21 @@ from __future__ import annotations
 from collections.abc import AsyncIterator, Callable
 from functools import partial
 from pathlib import Path
-from typing import cast
 from uuid import uuid4
 
 from ag_ui.core import TextMessageContentEvent, TextMessageEndEvent, TextMessageStartEvent
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, Response
+from fastmcp import FastMCP
 from pydantic_ai import AgentRunResult
 from pydantic_ai.messages import ModelMessage, TextPart
 from pydantic_ai.models import Model
 from pydantic_ai.models.openai import OpenAIChatModelSettings
-from pydantic_ai.toolsets import AbstractToolset
 from pydantic_ai.ui.ag_ui import AGUIAdapter
 from pydantic_ai.usage import RunUsage
 
-from sql_agent.agent import RequestDeps, build_agent, ollama_model
-from sql_agent.mcp.exposure import prepare_exposure
-from sql_agent.mcp.server import DbMcp, create_db_mcp
+from sql_agent.agent import RequestDeps, build_agent, database_toolset, ollama_model
+from sql_agent.mcp.server import create_database_server
 from sql_agent.settings import Settings
 from sql_agent.types import AgentAnswer
 
@@ -29,18 +27,20 @@ _FRONTEND_INDEX = Path(__file__).parents[3] / "frontend" / "index.html"
 def create_app(
     *,
     settings: Settings | None = None,
-    db_mcp: DbMcp | None = None,
+    database: FastMCP | None = None,
     model: Model | None = None,
     usage_sink: Callable[[RunUsage], None] | None = None,
 ) -> FastAPI:
     resolved_settings = settings or Settings.from_env()
-    resolved_db = db_mcp or create_db_mcp(
+    resolved_database = database or create_database_server(
         resolved_settings.dsn,
         row_cap=resolved_settings.row_cap,
         statement_timeout_ms=resolved_settings.statement_timeout_ms,
     )
-    resolved_db.disable_call_recording()
-    agent = build_agent(model or ollama_model(resolved_settings))
+    agent = build_agent(
+        model or ollama_model(resolved_settings),
+        database_toolset(resolved_database),
+    )
     app = FastAPI(title="Schema-generic SQL agent")
 
     @app.get("/", response_class=HTMLResponse)
@@ -54,13 +54,10 @@ def create_app(
     @app.post("/agui")
     async def agui(request: Request) -> Response:
         request_id = request.headers.get("x-request-id") or str(uuid4())
-        setup = await prepare_exposure(resolved_db, resolved_settings.exposure_mode)
         return await AGUIAdapter.dispatch_request(
             request,
             agent=agent,
             deps=RequestDeps(request_id=request_id),
-            instructions=setup.instructions,
-            toolsets=[cast(AbstractToolset[RequestDeps], setup.toolset)],
             model_settings=OpenAIChatModelSettings(
                 openai_reasoning_effort=(None if resolved_settings.agui_model_thinking else "none")
             ),

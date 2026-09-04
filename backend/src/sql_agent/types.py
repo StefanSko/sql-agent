@@ -3,17 +3,10 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import date, datetime
 from decimal import Decimal
-from enum import StrEnum
 from typing import Literal
 
 type JsonScalar = str | int | float | bool | None
 type DatabaseScalar = JsonScalar | date | datetime | Decimal
-
-
-class ExposureMode(StrEnum):
-    GRANULAR = "granular"
-    CATALOG = "catalog"
-    PREFETCHED = "prefetched"
 
 
 @dataclass(frozen=True)

@@ -60,6 +60,44 @@ def list_tables_model(seen: list[list[ModelMessage]] | None = None) -> FunctionM
     return streaming_function_model(respond)
 
 
+def catalog_model(seen: list[list[ModelMessage]] | None = None) -> FunctionModel:
+    def respond(messages: list[ModelMessage], info: AgentInfo) -> ModelResponse:
+        if seen is not None:
+            seen.append(list(messages))
+        assert {tool.name for tool in info.function_tools} == {"get_catalog", "run_query"}
+        returns = _returns(messages)
+        if not returns:
+            return ModelResponse(parts=[ToolCallPart("get_catalog", {})])
+        return _final(info, "The database has three tables.", ("catalog",))
+
+    return streaming_function_model(respond)
+
+
+def catalog_aggregation_model(seen: list[list[ModelMessage]] | None = None) -> FunctionModel:
+    def respond(messages: list[ModelMessage], info: AgentInfo) -> ModelResponse:
+        if seen is not None:
+            seen.append(list(messages))
+        assert {tool.name for tool in info.function_tools} == {"get_catalog", "run_query"}
+        names = [part.tool_name for part in _returns(messages)]
+        if "get_catalog" not in names:
+            return ModelResponse(parts=[ToolCallPart("get_catalog", {})])
+        if "run_query" not in names:
+            return ModelResponse(
+                parts=[
+                    ToolCallPart(
+                        "run_query",
+                        {
+                            "sql": "SELECT COUNT(*) AS member_trips FROM trips "
+                            "JOIN riders USING (rider_id) WHERE riders.plan = 'member'"
+                        },
+                    )
+                ]
+            )
+        return _final(info, "Member riders took 6 trips.", ("member_trips=6",))
+
+    return streaming_function_model(respond)
+
+
 def aggregation_model(seen: list[list[ModelMessage]] | None = None) -> FunctionModel:
     def respond(messages: list[ModelMessage], info: AgentInfo) -> ModelResponse:
         if seen is not None:

@@ -53,7 +53,6 @@ services:
       SQL_AGENT_OLLAMA_BASE_URL: http://ollama:11434/v1
       SQL_AGENT_MODEL_NAME: ${SQL_AGENT_MODEL_NAME:-gemma4:12b-it-q4_K_M}
       SQL_AGENT_OLLAMA_API_KEY: ollama
-      SQL_AGENT_EXPOSURE_MODE: ${SQL_AGENT_EXPOSURE_MODE:-prefetched}
       SQL_AGENT_AGUI_MODEL_THINKING: "false"
     ports:
       - "${AGENT_PORT:-8000}:8000"

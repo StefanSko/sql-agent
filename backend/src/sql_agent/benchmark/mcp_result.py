@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from dataclasses import asdict, is_dataclass
+
 from fastmcp.client.client import CallToolResult
 from pydantic import TypeAdapter
 
@@ -7,10 +9,10 @@ from pydantic import TypeAdapter
 def parse_tool_result[T](result: CallToolResult, adapter: TypeAdapter[T]) -> T:
     if result.is_error:
         raise RuntimeError(_error_text(result))
-    content = result.structured_content
-    if content is not None and set(content) == {"result"}:
-        content = content["result"]
-    return adapter.validate_python(content)
+    data = result.data
+    if is_dataclass(data) and not isinstance(data, type):
+        data = asdict(data)
+    return adapter.validate_python(data)
 
 
 def _error_text(result: CallToolResult) -> str:

@@ -16,13 +16,13 @@ from pydantic_ai.exceptions import UnexpectedModelBehavior
 from pydantic_ai.models import Model
 from pydantic_ai.models.openai import OpenAIChatModelSettings
 
-from sql_agent.agent import AgentRun, RequestDeps, build_agent, ollama_model, run_agent
-from sql_agent.mcp.client import parse_tool_result
-from sql_agent.mcp.server import create_db_mcp
-from sql_agent.metrics import (
+from sql_agent.agent import RequestDeps, ollama_model
+from sql_agent.benchmark.execution import BenchmarkRun, run_agent
+from sql_agent.benchmark.mcp_result import parse_tool_result
+from sql_agent.benchmark.metrics import (
+    BenchmarkChecks,
+    BenchmarkSummary,
     CompleteMetrics,
-    ExperimentChecks,
-    ExperimentSummary,
     FailureKind,
     RunFailed,
     RunRecord,
@@ -30,13 +30,15 @@ from sql_agent.metrics import (
     VariantChecks,
     rank_variants,
 )
-from sql_agent.pglite import PGliteConfig, start_pglite
-from sql_agent.seed import reset_database
+from sql_agent.benchmark.pglite import PGliteConfig, start_pglite
+from sql_agent.benchmark.seed import reset_database
+from sql_agent.benchmark.types import ExposureMode
+from sql_agent.benchmark.workload import WORKLOAD_VERSION, WorkloadCase, load_workload
+from sql_agent.mcp.server import create_database_server
 from sql_agent.settings import Dsn, Settings
-from sql_agent.types import ExposureMode, QueryOk, QueryRejected, QueryResult
-from sql_agent.workload import WORKLOAD_VERSION, WorkloadCase, load_workload
+from sql_agent.types import QueryOk, QueryRejected, QueryResult
 
-_ROOT = Path(__file__).parents[3]
+_ROOT = Path(__file__).parents[4]
 
 
 @dataclass(frozen=True)
@@ -51,7 +53,7 @@ class ModelMetadata:
 
 
 @dataclass(frozen=True)
-class ExperimentMetadata:
+class BenchmarkMetadata:
     executed_at: str
     workload_version: str
     model: ModelMetadata
@@ -66,11 +68,11 @@ class ExperimentMetadata:
 
 
 @dataclass(frozen=True)
-class ExperimentArtifact:
-    metadata: ExperimentMetadata
-    checks: ExperimentChecks
+class BenchmarkArtifact:
+    metadata: BenchmarkMetadata
+    checks: BenchmarkChecks
     records: tuple[RunRecord, ...]
-    summary: ExperimentSummary
+    summary: BenchmarkSummary
 
 
 @dataclass(frozen=True)
@@ -100,20 +102,20 @@ def rotation_order(repetition: int) -> tuple[ExposureMode, ...]:
     return modes[offset:] + modes[:offset]
 
 
-async def run_experiment(
+async def run_benchmark(
     settings: Settings,
     *,
     repetitions: int,
     seed: int,
     timeout_seconds: float,
-) -> ExperimentArtifact:
+) -> BenchmarkArtifact:
     if repetitions < 3:
-        raise ValueError("the exposure experiment requires at least three repetitions")
+        raise ValueError("the exposure benchmark requires at least three repetitions")
     workload = load_workload()
     model_metadata = await fetch_model_metadata(settings)
     await warm_model(settings)
 
-    with TemporaryDirectory(prefix="sql-agent-experiment-") as temporary:
+    with TemporaryDirectory(prefix="sql-agent-benchmark-") as temporary:
         directory = Path(temporary)
         pglite = await start_pglite(
             PGliteConfig(
@@ -135,7 +137,7 @@ async def run_experiment(
         finally:
             await pglite.stop()
 
-    checks = ExperimentChecks(
+    checks = BenchmarkChecks(
         variants=tuple(
             VariantChecks(
                 mode=mode,
@@ -146,7 +148,7 @@ async def run_experiment(
         )
     )
     summary = rank_variants(records, checks)
-    metadata = ExperimentMetadata(
+    metadata = BenchmarkMetadata(
         executed_at=datetime.now(UTC).isoformat(),
         workload_version=WORKLOAD_VERSION,
         model=model_metadata,
@@ -159,7 +161,7 @@ async def run_experiment(
         fastmcp_version=version("fastmcp"),
         mode_orders=tuple(rotation_order(repetition) for repetition in range(repetitions)),
     )
-    return ExperimentArtifact(
+    return BenchmarkArtifact(
         metadata=metadata,
         checks=checks,
         records=records,
@@ -216,7 +218,7 @@ async def _run_case(
     seed: int,
     timeout_seconds: float,
 ) -> RunRecord:
-    db_mcp = create_db_mcp(
+    database = create_database_server(
         dsn,
         row_cap=settings.row_cap,
         statement_timeout_ms=settings.statement_timeout_ms,
@@ -224,16 +226,16 @@ async def _run_case(
     try:
         async with asyncio.timeout(timeout_seconds):
             execution = await run_agent(
-                build_agent(model),
+                model,
                 case.prompt,
-                db_mcp,
+                database,
                 mode,
-                RequestDeps(request_id=f"experiment-{run_order}"),
+                RequestDeps(request_id=f"benchmark-{run_order}"),
                 stream_events=True,
                 model_settings=OpenAIChatModelSettings(temperature=0.0, seed=seed),
             )
     except TimeoutError:
-        outcome = RunFailed(kind=FailureKind.TIMEOUT, detail="run exceeded experiment timeout")
+        outcome = RunFailed(kind=FailureKind.TIMEOUT, detail="run exceeded benchmark timeout")
     except UnexpectedModelBehavior:
         outcome = RunFailed(
             kind=FailureKind.RETRY_EXHAUSTED,
@@ -266,7 +268,7 @@ async def _run_case(
     )
 
 
-def _complete_metrics(execution: AgentRun) -> CompleteMetrics:
+def _complete_metrics(execution: BenchmarkRun) -> CompleteMetrics:
     return CompleteMetrics(
         latency_seconds=execution.latency_seconds,
         first_event_seconds=execution.first_event_seconds,
@@ -286,8 +288,8 @@ async def _safety_results(dsn: Dsn, case: WorkloadCase) -> dict[ExposureMode, bo
             _ROOT / case.schema_path,
             _ROOT / case.seed_directory if case.seed_directory is not None else None,
         )
-        db_mcp = create_db_mcp(dsn)
-        async with Client(db_mcp.server) as client:
+        database = create_database_server(dsn)
+        async with Client(database, mode="auto") as client:
             write = parse_tool_result(
                 await client.call_tool(
                     "run_query", {"sql": "DELETE FROM information_schema.tables"}
@@ -369,18 +371,18 @@ def _ollama_root(settings: Settings) -> str:
     return base.removesuffix("/v1")
 
 
-def save_artifact(artifact: ExperimentArtifact, path: Path) -> None:
+def save_artifact(artifact: BenchmarkArtifact, path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_bytes(TypeAdapter(ExperimentArtifact).dump_json(artifact, indent=2))
+    path.write_bytes(TypeAdapter(BenchmarkArtifact).dump_json(artifact, indent=2))
 
 
-def load_artifact(path: Path) -> ExperimentArtifact:
-    return TypeAdapter(ExperimentArtifact).validate_json(path.read_bytes())
+def load_artifact(path: Path) -> BenchmarkArtifact:
+    return TypeAdapter(BenchmarkArtifact).validate_json(path.read_bytes())
 
 
-def summary_markdown(artifact: ExperimentArtifact) -> str:
+def summary_markdown(artifact: BenchmarkArtifact) -> str:
     lines = [
-        "# Exposure experiment summary",
+        "# Exposure benchmark summary",
         "",
         f"- Executed: {artifact.metadata.executed_at}",
         f"- Model: `{artifact.metadata.model.name}` (`{artifact.metadata.model.digest}`)",
@@ -405,7 +407,7 @@ def summary_markdown(artifact: ExperimentArtifact) -> str:
         [
             "",
             f"- Evidence winner(s): **{winners}**",
-            f"- Provisional application mode: **{selected}**",
+            f"- Deterministic benchmark selection: **{selected}**",
             f"- Exact tie: **{'yes' if artifact.summary.is_tie else 'no'}**",
             "",
             "Failed repetitions count against correctness and are excluded from metric medians.",
@@ -419,16 +421,16 @@ def _format_metric(value: float | None, *, suffix: str = "", digits: int = 2) ->
 
 
 def _parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Run and summarize the exposure experiment")
+    parser = argparse.ArgumentParser(description="Run and summarize the exposure benchmark")
     subparsers = parser.add_subparsers(dest="command", required=True)
     run = subparsers.add_parser("run")
     run.add_argument("--repetitions", type=int, default=3)
     run.add_argument("--seed", type=int, default=42)
     run.add_argument("--timeout", type=float, default=120.0)
-    run.add_argument("--output", type=Path, default=Path("experiments/records/latest.json"))
+    run.add_argument("--output", type=Path, default=Path("benchmarks/records/latest.json"))
     summarize = subparsers.add_parser("summarize")
     summarize.add_argument("artifact", type=Path)
-    summarize.add_argument("--output", type=Path, default=Path("experiments/summaries/latest.md"))
+    summarize.add_argument("--output", type=Path, default=Path("benchmarks/summaries/latest.md"))
     return parser
 
 
@@ -436,7 +438,7 @@ def main() -> None:
     args = _parser().parse_args()
     if args.command == "run":
         artifact = asyncio.run(
-            run_experiment(
+            run_benchmark(
                 Settings.from_env(),
                 repetitions=args.repetitions,
                 seed=args.seed,
@@ -444,7 +446,7 @@ def main() -> None:
             )
         )
         save_artifact(artifact, args.output)
-        summary_path = Path("experiments/summaries/latest.md")
+        summary_path = Path("benchmarks/summaries/latest.md")
         summary_path.parent.mkdir(parents=True, exist_ok=True)
         summary_path.write_text(summary_markdown(artifact), encoding="utf-8")
         print(f"wrote {args.output} and {summary_path}")

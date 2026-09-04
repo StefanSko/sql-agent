@@ -51,12 +51,6 @@ class DatabaseConfig:
     statement_timeout_ms: int
 
 
-@dataclass(frozen=True)
-class DbCall:
-    tool_name: str
-    query_result: QueryResult | None = None
-
-
 class _Database:
     _config: DatabaseConfig
 
@@ -165,61 +159,29 @@ class _Database:
         return await asyncpg.connect(str(self._config.dsn), ssl=False)
 
 
-class DbMcp:
-    server: FastMCP
-    _calls: list[DbCall]
-    _record_calls: bool
+def _register_tools(server: FastMCP, database: _Database) -> None:
+    @server.tool(description="List the names of queryable tables in the database schema.")
+    async def list_tables() -> TableNames:
+        return await database.list_tables()
 
-    def __init__(self, database: _Database) -> None:
-        self.server = FastMCP("schema-generic-read-only-database", mask_error_details=True)
-        self._calls = []
-        self._record_calls = True
+    @server.tool(
+        description="Describe the columns, data types, and nullability of one queryable table."
+    )
+    async def describe_table(name: str) -> TableSchema:
+        return await database.describe_table(name)
 
-        @self.server.tool(description="List the names of queryable tables in the database schema.")
-        async def list_tables() -> TableNames:
-            result = await database.list_tables()
-            self._record(DbCall(tool_name="list_tables"))
-            return result
+    @server.tool(description="Return typed schema descriptions for all queryable tables.")
+    async def get_catalog() -> Catalog:
+        return await database.get_catalog()
 
-        @self.server.tool(
-            description="Describe the columns, data types, and nullability of one queryable table."
+    @server.tool(
+        description=(
+            "Execute exactly one read-only SQL statement. The result reports rows, "
+            "truncation, or a safe rejection explicitly."
         )
-        async def describe_table(name: str) -> TableSchema:
-            result = await database.describe_table(name)
-            self._record(DbCall(tool_name="describe_table"))
-            return result
-
-        @self.server.tool(description="Return typed schema descriptions for all queryable tables.")
-        async def get_catalog() -> Catalog:
-            result = await database.get_catalog()
-            self._record(DbCall(tool_name="get_catalog"))
-            return result
-
-        @self.server.tool(
-            description=(
-                "Execute exactly one read-only SQL statement. The result reports rows, "
-                "truncation, or a safe rejection explicitly."
-            )
-        )
-        async def run_query(sql: str) -> QueryResult:
-            result = await database.run_query(sql)
-            self._record(DbCall(tool_name="run_query", query_result=result))
-            return result
-
-    @property
-    def calls(self) -> tuple[DbCall, ...]:
-        return tuple(self._calls)
-
-    def call_count(self) -> int:
-        return len(self._calls)
-
-    def disable_call_recording(self) -> None:
-        self._calls.clear()
-        self._record_calls = False
-
-    def _record(self, call: DbCall) -> None:
-        if self._record_calls:
-            self._calls.append(call)
+    )
+    async def run_query(sql: str) -> QueryResult:
+        return await database.run_query(sql)
 
 
 def _first_keyword(statement: TokenList) -> str | None:
@@ -251,15 +213,17 @@ def _close_connection(connection: asyncpg.Connection) -> None:
     connection.terminate()
 
 
-def create_db_mcp(
+def create_database_server(
     dsn: Dsn,
     *,
     row_cap: int = 200,
     statement_timeout_ms: int = 5_000,
-) -> DbMcp:
+) -> FastMCP:
     config = DatabaseConfig(
         dsn=dsn,
         row_cap=row_cap,
         statement_timeout_ms=statement_timeout_ms,
     )
-    return DbMcp(_Database(config))
+    server = FastMCP("schema-generic-read-only-database", mask_error_details=True)
+    _register_tools(server, _Database(config))
+    return server

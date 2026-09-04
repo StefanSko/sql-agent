@@ -9,9 +9,9 @@ from pydantic_ai.messages import ModelMessage
 from pydantic_ai.usage import RunUsage
 
 from sql_agent.app import create_app
-from sql_agent.mcp.server import create_db_mcp
-from sql_agent.settings import Dsn, ExposureName, Settings
-from tests.support.models import FailingStreamModel, list_tables_model
+from sql_agent.mcp.server import create_database_server
+from sql_agent.settings import Dsn, Settings
+from tests.support.models import FailingStreamModel, catalog_model
 
 
 def settings(dsn: Dsn) -> Settings:
@@ -20,7 +20,6 @@ def settings(dsn: Dsn) -> Settings:
         ollama_base_url="http://unused.invalid/v1",
         model_name="test-model",
         ollama_api_key=SecretStr("test-key"),
-        exposure_mode=ExposureName.GRANULAR,
     )
 
 
@@ -45,8 +44,8 @@ def events(response_text: str) -> Iterator[dict[str, object]]:
 def test_agui_sequence_crosses_agent_mcp_and_pglite(seeded_dsn: Dsn) -> None:
     app = create_app(
         settings=settings(seeded_dsn),
-        db_mcp=create_db_mcp(seeded_dsn),
-        model=list_tables_model(),
+        database=create_database_server(seeded_dsn),
+        model=catalog_model(),
     )
 
     with TestClient(app) as client:
@@ -65,8 +64,8 @@ def test_agui_resends_full_history_and_passes_per_request_deps(seeded_dsn: Dsn) 
     seen: list[list[ModelMessage]] = []
     app = create_app(
         settings=settings(seeded_dsn),
-        db_mcp=create_db_mcp(seeded_dsn),
-        model=list_tables_model(seen),
+        database=create_database_server(seeded_dsn),
+        model=catalog_model(seen),
     )
     history: list[dict[str, object]] = [
         {"id": "user-old", "role": "user", "content": "Earlier question"},
@@ -89,8 +88,8 @@ def test_agui_resends_full_history_and_passes_per_request_deps(seeded_dsn: Dsn) 
 def test_completion_bridge_ignores_matching_text_from_prior_turn(seeded_dsn: Dsn) -> None:
     app = create_app(
         settings=settings(seeded_dsn),
-        db_mcp=create_db_mcp(seeded_dsn),
-        model=list_tables_model(),
+        database=create_database_server(seeded_dsn),
+        model=catalog_model(),
     )
     history: list[dict[str, object]] = [
         {"id": "user-old", "role": "user", "content": "What tables exist?"},
@@ -117,7 +116,7 @@ def test_agui_emits_protocol_error_after_midstream_failure(seeded_dsn: Dsn) -> N
     failing = FailingStreamModel()
     app = create_app(
         settings=settings(seeded_dsn),
-        db_mcp=create_db_mcp(seeded_dsn),
+        database=create_database_server(seeded_dsn),
         model=failing.as_model(),
     )
 
@@ -130,27 +129,12 @@ def test_agui_emits_protocol_error_after_midstream_failure(seeded_dsn: Dsn) -> N
     assert "RUN_ERROR" in event_types
 
 
-def test_app_does_not_retain_completed_query_results(seeded_dsn: Dsn) -> None:
-    db_mcp = create_db_mcp(seeded_dsn)
-    app = create_app(
-        settings=settings(seeded_dsn),
-        db_mcp=db_mcp,
-        model=list_tables_model(),
-    )
-
-    with TestClient(app) as client:
-        response = client.post("/agui", json=request())
-
-    assert response.status_code == 200
-    assert db_mcp.calls == ()
-
-
 def test_agui_reports_completed_usage_to_server_side_sink(seeded_dsn: Dsn) -> None:
     captured: list[RunUsage] = []
     app = create_app(
         settings=settings(seeded_dsn),
-        db_mcp=create_db_mcp(seeded_dsn),
-        model=list_tables_model(),
+        database=create_database_server(seeded_dsn),
+        model=catalog_model(),
         usage_sink=captured.append,
     )
 
@@ -165,8 +149,8 @@ def test_agui_reports_completed_usage_to_server_side_sink(seeded_dsn: Dsn) -> No
 def test_static_ui_renders_text_and_tool_events(seeded_dsn: Dsn) -> None:
     app = create_app(
         settings=settings(seeded_dsn),
-        db_mcp=create_db_mcp(seeded_dsn),
-        model=list_tables_model(),
+        database=create_database_server(seeded_dsn),
+        model=catalog_model(),
     )
 
     with TestClient(app) as client:

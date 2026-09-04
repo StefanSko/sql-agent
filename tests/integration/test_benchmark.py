@@ -5,23 +5,26 @@ from pathlib import Path
 from pydantic_ai.messages import ModelMessage, ModelResponse, ToolCallPart, ToolReturnPart
 from pydantic_ai.models.function import AgentInfo, FunctionModel
 
-from sql_agent.agent import RequestDeps, build_agent, run_agent
-from sql_agent.mcp.server import create_db_mcp
+from sql_agent.agent import RequestDeps
+from sql_agent.benchmark.execution import run_agent
+from sql_agent.benchmark.types import ExposureMode
+from sql_agent.mcp.server import create_database_server
 from sql_agent.settings import Dsn
-from sql_agent.types import ExposureMode
 from tests.support.pglite import load_dataset
 
 ROOT = Path(__file__).parents[2]
 
 
-def test_mcp_boundary_has_a_dedicated_package() -> None:
-    package = ROOT / "backend" / "src" / "sql_agent" / "mcp"
+def test_benchmark_has_a_dedicated_package() -> None:
+    package = ROOT / "backend" / "src" / "sql_agent" / "benchmark"
 
     assert {path.name for path in package.glob("*.py")} >= {
         "__init__.py",
-        "client.py",
+        "execution.py",
         "exposure.py",
-        "server.py",
+        "metrics.py",
+        "runner.py",
+        "workload.py",
     }
 
 
@@ -63,7 +66,7 @@ def model_for_mode(mode: ExposureMode) -> FunctionModel:
 
 
 async def test_all_exposure_modes_are_schema_generic_on_held_out_database(pglite_dsn: Dsn) -> None:
-    await load_dataset(pglite_dsn, ROOT / "tests" / "data" / "heldout.sql", None)
+    await load_dataset(pglite_dsn, ROOT / "data" / "workloads" / "heldout.sql", None)
 
     expected_calls = {
         ExposureMode.GRANULAR: ("list_tables", "describe_table", "run_query"),
@@ -71,11 +74,11 @@ async def test_all_exposure_modes_are_schema_generic_on_held_out_database(pglite
         ExposureMode.PREFETCHED: ("get_catalog", "run_query"),
     }
     for mode in ExposureMode:
-        db_mcp = create_db_mcp(pglite_dsn)
+        database = create_database_server(pglite_dsn)
         result = await run_agent(
-            build_agent(model_for_mode(mode)),
+            model_for_mode(mode),
             "What is the total quantity?",
-            db_mcp,
+            database,
             mode,
             RequestDeps(request_id=f"heldout-{mode.value}"),
         )
