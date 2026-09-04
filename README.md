@@ -14,8 +14,8 @@ browser ──AG-UI/SSE──> FastAPI ──> Pydantic AI ──MCP v2──> F
 The application has one runtime path:
 
 - `backend/src/sql_agent/app.py` exposes the UI and `/agui` endpoint.
-- `backend/src/sql_agent/agent.py` defines the agent and its fixed database tool surface:
-  `get_catalog` and `run_query`.
+- `backend/src/sql_agent/agent.py` prefetches `get_catalog` through MCP for every run,
+  injects the typed catalog into instructions, and exposes only `run_query` to the model.
 - `backend/src/sql_agent/mcp/server.py` owns all database access and SQL safety.
 - FastMCP 4 negotiates modern MCP v2 (`server/discover`) in stateless mode; no protocol session is
   retained between runs and no sidecar process is required.

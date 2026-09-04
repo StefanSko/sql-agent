@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import cast
 
 from fastmcp import Client, FastMCP
+from pydantic import TypeAdapter
 from pydantic_ai import Agent, RunContext
 from pydantic_ai.mcp import MCPToolset
 from pydantic_ai.models import Model
@@ -11,17 +12,20 @@ from pydantic_ai.models.openai import OpenAIChatModel
 from pydantic_ai.providers.openai import OpenAIProvider
 from pydantic_ai.toolsets import AbstractToolset, FilteredToolset
 
+from sql_agent.mcp.client import fetch_catalog
 from sql_agent.settings import Settings
-from sql_agent.types import AgentAnswer
+from sql_agent.types import AgentAnswer, Catalog
 
 BASE_INSTRUCTIONS = """You answer natural-language questions using a read-only SQL database.
-Call get_catalog before writing PostgreSQL, then use run_query and base the answer on its rows.
-Never guess table or column names. If a query is rejected, explain the safe failure without
-inventing data. Finish with the required structured answer and concise evidence from tool results.
-For a scalar row, include an evidence entry exactly in the form column=value.
+Use schema information supplied in the instructions or available schema tools before writing
+PostgreSQL, then call run_query and base the answer on its rows. Never guess table or column names.
+If a query is rejected, explain the safe failure without inventing data. Finish with the required
+structured answer and concise evidence from tool results. For a scalar row, include an evidence
+entry exactly in the form column=value.
 """
 
-_DATABASE_TOOLS = frozenset({"get_catalog", "run_query"})
+_DATABASE_TOOLS = frozenset({"run_query"})
+_CATALOG = TypeAdapter(Catalog)
 
 
 @dataclass(frozen=True)
@@ -38,6 +42,21 @@ def database_toolset(server: FastMCP) -> AbstractToolset[RequestDeps]:
     )
     filtered = FilteredToolset(mcp, lambda _ctx, tool: tool.name in _DATABASE_TOOLS)
     return cast(AbstractToolset[RequestDeps], filtered)
+
+
+def build_database_agent(model: Model, server: FastMCP) -> Agent[RequestDeps, AgentAnswer]:
+    agent = build_agent(model, database_toolset(server))
+
+    @agent.instructions
+    async def catalog_instruction(_ctx: RunContext[RequestDeps]) -> str:
+        catalog = await fetch_catalog(server)
+        encoded = _CATALOG.dump_json(catalog).decode("utf-8")
+        return (
+            "The catalog below was prefetched through MCP for this run. Use it to write SQL.\n"
+            f"<catalog>{encoded}</catalog>"
+        )
+
+    return agent
 
 
 def build_agent(

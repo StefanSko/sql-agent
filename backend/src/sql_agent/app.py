@@ -16,7 +16,7 @@ from pydantic_ai.models.openai import OpenAIChatModelSettings
 from pydantic_ai.ui.ag_ui import AGUIAdapter
 from pydantic_ai.usage import RunUsage
 
-from sql_agent.agent import RequestDeps, build_agent, database_toolset, ollama_model
+from sql_agent.agent import RequestDeps, build_database_agent, ollama_model
 from sql_agent.mcp.server import create_database_server
 from sql_agent.settings import Settings
 from sql_agent.types import AgentAnswer
@@ -37,10 +37,7 @@ def create_app(
         row_cap=resolved_settings.row_cap,
         statement_timeout_ms=resolved_settings.statement_timeout_ms,
     )
-    agent = build_agent(
-        model or ollama_model(resolved_settings),
-        database_toolset(resolved_database),
-    )
+    agent = build_database_agent(model or ollama_model(resolved_settings), resolved_database)
     app = FastAPI(title="Schema-generic SQL agent")
 
     @app.get("/", response_class=HTMLResponse)

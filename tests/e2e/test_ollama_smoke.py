@@ -4,7 +4,7 @@ import os
 
 import pytest
 
-from sql_agent.agent import RequestDeps, build_agent, database_toolset, ollama_model
+from sql_agent.agent import RequestDeps, build_database_agent, ollama_model
 from sql_agent.mcp.server import create_database_server
 from sql_agent.settings import Dsn, Settings
 
@@ -20,7 +20,7 @@ def require_local_e2e() -> None:
 async def test_real_ollama_executes_safe_join_aggregation(seeded_dsn: Dsn) -> None:
     settings = Settings.from_env()
     database = create_database_server(seeded_dsn)
-    agent = build_agent(ollama_model(settings), database_toolset(database))
+    agent = build_database_agent(ollama_model(settings), database)
 
     result = await agent.run(
         "How many trips were taken by member riders? Use the database tools and report the number.",

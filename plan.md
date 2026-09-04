@@ -16,14 +16,14 @@ browser -> AG-UI endpoint -> Pydantic AI agent -> FastMCP database tools -> Post
 
 The production contract is deliberately narrow:
 
-1. `get_catalog()` returns the database schema.
-2. `run_query(sql)` executes one bounded read-only statement.
-3. The agent returns a typed `AgentAnswer`.
-4. AG-UI streams text, tool lifecycle, completion, and error events.
+1. The application prefetches `get_catalog()` through MCP for each run.
+2. The typed catalog is injected into that run's instructions.
+3. The model sees only `run_query(sql)`, which executes one bounded read-only statement.
+4. The agent returns a typed `AgentAnswer`.
+5. AG-UI streams text, tool lifecycle, completion, and error events.
 
-The model sees only `get_catalog` and `run_query`. FastMCP also retains the granular
-schema tools for interoperability and offline benchmark comparisons, but exposure
-selection is not an application setting.
+FastMCP retains the granular schema tools for interoperability and offline benchmark
+comparisons, but exposure selection is not an application setting.
 
 ## Invariants
 

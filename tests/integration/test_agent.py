@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from pydantic_ai.messages import ModelMessage, ModelResponse, ToolCallPart, ToolReturnPart
-from pydantic_ai.models.function import AgentInfo, FunctionModel
+import pytest
+from pydantic_ai.messages import ModelMessage, ToolReturnPart
 
-from sql_agent.agent import RequestDeps, build_agent, database_toolset
+from sql_agent.agent import RequestDeps, build_database_agent
 from sql_agent.mcp.server import create_database_server
 from sql_agent.settings import Dsn
 from tests.support.models import catalog_aggregation_model, catalog_model
@@ -22,7 +22,7 @@ def _tool_names(messages: list[list[ModelMessage]]) -> tuple[str, ...]:
 async def test_prompt_crosses_agent_modern_mcp_and_database(seeded_dsn: Dsn) -> None:
     seen: list[list[ModelMessage]] = []
     server = create_database_server(seeded_dsn)
-    agent = build_agent(catalog_model(seen), database_toolset(server))
+    agent = build_database_agent(catalog_model(seen), server)
 
     result = await agent.run(
         "What tables can I query?",
@@ -30,13 +30,14 @@ async def test_prompt_crosses_agent_modern_mcp_and_database(seeded_dsn: Dsn) -> 
     )
 
     assert result.output.answer == "The database has three tables."
-    assert "get_catalog" in _tool_names(seen)
+    assert _tool_names(seen) == ("run_query",)
+    assert "<catalog>" in repr(seen)
 
 
 async def test_nl_join_aggregation_asserts_database_result(seeded_dsn: Dsn) -> None:
     seen: list[list[ModelMessage]] = []
     server = create_database_server(seeded_dsn)
-    agent = build_agent(catalog_aggregation_model(seen), database_toolset(server))
+    agent = build_database_agent(catalog_aggregation_model(seen), server)
 
     result = await agent.run(
         "How many trips were taken by member riders?",
@@ -49,35 +50,14 @@ async def test_nl_join_aggregation_asserts_database_result(seeded_dsn: Dsn) -> N
     assert "6" in repr(seen)
 
 
-async def test_database_failure_and_history_never_expose_dsn() -> None:
+async def test_catalog_prefetch_failure_never_exposes_dsn() -> None:
     sentinel = "SENTINEL-DB-CREDENTIAL"
     server = create_database_server(Dsn(f"postgresql://{sentinel}:secret@127.0.0.1:1/postgres"))
-    seen: list[list[ModelMessage]] = []
+    agent = build_database_agent(catalog_model(), server)
 
-    def respond(messages: list[ModelMessage], info: AgentInfo) -> ModelResponse:
-        seen.append(list(messages))
-        returned = [
-            part
-            for message in messages
-            for part in message.parts
-            if isinstance(part, ToolReturnPart)
-        ]
-        if not returned:
-            return ModelResponse(parts=[ToolCallPart("run_query", {"sql": "SELECT 1"})])
-        return ModelResponse(
-            parts=[
-                ToolCallPart(
-                    info.output_tools[0].name,
-                    {"answer": "The query failed safely.", "evidence": ["connection failure"]},
-                )
-            ]
-        )
+    with pytest.raises(Exception) as captured:
+        await agent.run("Run a harmless query.", deps=RequestDeps(request_id="failure"))
 
-    agent = build_agent(FunctionModel(respond), database_toolset(server))
-    result = await agent.run("Run a harmless query.", deps=RequestDeps(request_id="failure"))
-
-    visible = f"{seen!r}\n{result!r}"
-    assert result.output.answer == "The query failed safely."
-    assert "database unavailable" in visible
+    visible = str(captured.value)
     assert sentinel not in visible
     assert "postgresql://" not in visible
