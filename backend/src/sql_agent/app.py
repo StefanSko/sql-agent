@@ -18,8 +18,8 @@ from pydantic_ai.ui.ag_ui import AGUIAdapter
 from pydantic_ai.usage import RunUsage
 
 from sql_agent.agent import RequestDeps, build_agent, ollama_model
-from sql_agent.db_mcp import DbMcp, create_db_mcp
-from sql_agent.exposure import prepare_exposure
+from sql_agent.mcp.exposure import prepare_exposure
+from sql_agent.mcp.server import DbMcp, create_db_mcp
 from sql_agent.settings import Settings
 from sql_agent.types import AgentAnswer
 

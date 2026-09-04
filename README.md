@@ -7,7 +7,8 @@ scope and experiment rules are in [`plan.md`](plan.md); conclusions are in
 
 ## Repository layout
 
-- `backend/src/sql_agent/` — FastAPI, Pydantic AI, and in-process MCP runtime
+- `backend/src/sql_agent/` — FastAPI and Pydantic AI application runtime
+- `backend/src/sql_agent/mcp/` — in-process MCP server, client decoding, and exposure policy
 - `frontend/` — standalone browser client served by the backend
 - `backend/pglite_manager.js` — backend test-database process
 - `tests/` — unit, integration, and opt-in end-to-end coverage

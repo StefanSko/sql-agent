@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from sql_agent.experiment import rotation_order
-from sql_agent.exposure import ExposureMode
+from sql_agent.types import ExposureMode
 
 
 def test_variant_order_rotates_by_repetition() -> None:

@@ -14,11 +14,11 @@ from pydantic_ai.providers.openai import OpenAIProvider
 from pydantic_ai.toolsets import AbstractToolset
 from pydantic_ai.usage import RunUsage
 
-from sql_agent.db_mcp import DbMcp
-from sql_agent.exposure import ExposureMode, prepare_exposure
 from sql_agent.history import HistoryPolicy, process_history_capability
+from sql_agent.mcp.exposure import prepare_exposure
+from sql_agent.mcp.server import DbMcp
 from sql_agent.settings import Settings
-from sql_agent.types import AgentAnswer, QueryResult
+from sql_agent.types import AgentAnswer, ExposureMode, QueryResult
 
 BASE_INSTRUCTIONS = """You answer natural-language questions using a read-only SQL database.
 Use only the available schema and query tools; never guess table or column names.

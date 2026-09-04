@@ -11,7 +11,7 @@ from baseline.hand_rolled.agent import (
     run_loop,
 )
 from baseline.hand_rolled.mcp_backend import FastMcpBackend
-from sql_agent.db_mcp import create_db_mcp
+from sql_agent.mcp.server import create_db_mcp
 from sql_agent.settings import Dsn
 
 

@@ -97,7 +97,7 @@
         <article class="frame">
           <div class="step">03</div><div class="layer"><small>policy seam</small><strong>prepare_exposure</strong></div>
           <div class="action"><h3>Select exactly what the model can discover</h3><p>The mode produces filtered tools plus instructions. Prefetched mode converts MCP catalog output into typed context and leaves only <code>run_query</code> exposed.</p></div>
-          <div class="handoff"><small>handoff</small><span class="token">ExposureSetup</span><a class="jump" href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/exposure.py#L24" data-code-ref="../backend/src/sql_agent/exposure.py#L24">exposure.py:L24 ↗</a></div>
+          <div class="handoff"><small>handoff</small><span class="token">ExposureSetup</span><a class="jump" href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/exposure.py#L24" data-code-ref="../backend/src/sql_agent/mcp/exposure.py#L24">exposure.py:L24 ↗</a></div>
         </article>
         <article class="frame">
           <div class="step">04</div><div class="layer"><small>agent</small><strong>AGUIAdapter</strong></div>
@@ -107,12 +107,12 @@
         <article class="frame">
           <div class="step">05</div><div class="layer"><small>tool boundary</small><strong>FastMCP</strong></div>
           <div class="action"><h3>Dispatch a declared tool—not arbitrary Python</h3><p><code>MCPToolset</code> calls the in-process FastMCP server. Tool declarations return <code>TableNames</code>, <code>TableSchema</code>, <code>Catalog</code>, or <code>QueryResult</code>.</p></div>
-          <div class="handoff"><small>handoff</small><span class="token">run_query(sql: str)</span><a class="jump" href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/db_mcp.py#L168" data-code-ref="../backend/src/sql_agent/db_mcp.py#L168">db_mcp.py:L168 ↗</a></div>
+          <div class="handoff"><small>handoff</small><span class="token">run_query(sql: str)</span><a class="jump" href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/db_mcp.py#L168" data-code-ref="../backend/src/sql_agent/mcp/server.py#L168">db_mcp.py:L168 ↗</a></div>
         </article>
         <article class="frame">
           <div class="step">06</div><div class="layer"><small>trust edge</small><strong>_Database</strong></div>
           <div class="action"><h3>Parse, constrain, execute, cap</h3><p>The adapter rejects unsafe shapes before connecting, then uses a read-only transaction, local timeout, cursor stop at <code>row_cap + 1</code>, and sanitized exceptions.</p></div>
-          <div class="handoff"><small>handoff</small><span class="token">QueryOk | QueryTruncated | QueryRejected</span><a class="jump" href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/db_mcp.py#L113" data-code-ref="../backend/src/sql_agent/db_mcp.py#L113">db_mcp.py:L113 ↗</a></div>
+          <div class="handoff"><small>handoff</small><span class="token">QueryOk | QueryTruncated | QueryRejected</span><a class="jump" href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/db_mcp.py#L113" data-code-ref="../backend/src/sql_agent/mcp/server.py#L113">db_mcp.py:L113 ↗</a></div>
         </article>
         <article class="frame">
           <div class="step">07</div><div class="layer"><small>egress</small><strong>AG-UI stream</strong></div>
@@ -148,8 +148,8 @@
       <div class="code-index">
         <article><a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/static/index.html#L50" data-code-ref="../frontend/index.html#L50">static/index.html:L50</a><b>AG-UI event reducer</b><p>Maps message and tool IDs into canonical history.</p></article>
         <article><a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/app.py#L29" data-code-ref="../backend/src/sql_agent/app.py#L29">app.py:L29</a><b>Composition root</b><p>Settings, DB MCP, model, route, and usage sink.</p></article>
-        <article><a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/exposure.py#L18" data-code-ref="../backend/src/sql_agent/exposure.py#L18">exposure.py:L18</a><b>Policy output</b><p>Filtered toolset plus per-run instructions.</p></article>
-        <article><a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/mcp_client.py#L7" data-code-ref="../backend/src/sql_agent/mcp_client.py#L7">mcp_client.py:L7</a><b>MCP decode boundary</b><p>Pydantic TypeAdapter parses structured tool content.</p></article>
+        <article><a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/exposure.py#L18" data-code-ref="../backend/src/sql_agent/mcp/exposure.py#L18">exposure.py:L18</a><b>Policy output</b><p>Filtered toolset plus per-run instructions.</p></article>
+        <article><a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/mcp_client.py#L7" data-code-ref="../backend/src/sql_agent/mcp/client.py#L7">mcp_client.py:L7</a><b>MCP decode boundary</b><p>Pydantic TypeAdapter parses structured tool content.</p></article>
         <article><a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/workload.py#L29" data-code-ref="../backend/src/sql_agent/workload.py#L29">workload.py:L29</a><b>Correctness oracle</b><p>Requires both queried value and answer evidence.</p></article>
         <article><a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/metrics.py#L116" data-code-ref="../backend/src/sql_agent/metrics.py#L116">metrics.py:L116</a><b>Ranking boundary</b><p>Eligibility first; lexicographic score second.</p></article>
       </div>

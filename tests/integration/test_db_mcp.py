@@ -6,8 +6,8 @@ import pytest
 from fastmcp import Client
 from pydantic import TypeAdapter
 
-from sql_agent.db_mcp import DbMcp, create_db_mcp
-from sql_agent.mcp_client import parse_tool_result
+from sql_agent.mcp.client import parse_tool_result
+from sql_agent.mcp.server import DbMcp, create_db_mcp
 from sql_agent.settings import Dsn
 from sql_agent.types import Catalog, QueryOk, QueryRejected, QueryTruncated, TableNames, TableSchema
 

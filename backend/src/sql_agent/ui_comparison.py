@@ -17,8 +17,8 @@ from baseline.hand_rolled.mcp_backend import FastMcpBackend
 from baseline.hand_rolled.openai_model import OpenAICompatibleModel
 from sql_agent.agent import ollama_model
 from sql_agent.app import create_app
-from sql_agent.db_mcp import create_db_mcp
 from sql_agent.experiment import ModelMetadata, fetch_model_metadata, warm_model
+from sql_agent.mcp.server import create_db_mcp
 from sql_agent.multiturn_experiment import _answer_text, _events, _request_payload
 from sql_agent.pglite import PGliteConfig, start_pglite
 from sql_agent.seed import reset_database

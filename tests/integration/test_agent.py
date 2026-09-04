@@ -5,10 +5,9 @@ from pydantic_ai.messages import ModelMessage, ModelResponse, ToolCallPart, Tool
 from pydantic_ai.models.function import AgentInfo, FunctionModel
 
 from sql_agent.agent import RequestDeps, build_agent, run_agent
-from sql_agent.db_mcp import create_db_mcp
-from sql_agent.exposure import ExposureMode
+from sql_agent.mcp.server import create_db_mcp
 from sql_agent.settings import Dsn
-from sql_agent.types import QueryOk, QueryRejected
+from sql_agent.types import ExposureMode, QueryOk, QueryRejected
 from tests.support.models import aggregation_model, list_tables_model
 
 

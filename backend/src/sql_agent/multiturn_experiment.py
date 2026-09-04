@@ -25,9 +25,9 @@ from pydantic_ai.usage import RunUsage
 
 from sql_agent.agent import RequestDeps, build_agent, ollama_model, run_agent
 from sql_agent.app import create_app
-from sql_agent.db_mcp import create_db_mcp
 from sql_agent.experiment import ModelMetadata, fetch_model_metadata, warm_model
 from sql_agent.history import HistoryPolicy, compact_tool_history
+from sql_agent.mcp.server import create_db_mcp
 from sql_agent.multiturn import MultiTurnMeasurement, ResendAssessment, assess_full_resend
 from sql_agent.pglite import PGliteConfig, start_pglite
 from sql_agent.seed import reset_database

@@ -9,7 +9,7 @@ from pydantic_ai.messages import ModelMessage
 from pydantic_ai.usage import RunUsage
 
 from sql_agent.app import create_app
-from sql_agent.db_mcp import create_db_mcp
+from sql_agent.mcp.server import create_db_mcp
 from sql_agent.settings import Dsn, ExposureName, Settings
 from tests.support.models import FailingStreamModel, list_tables_model
 

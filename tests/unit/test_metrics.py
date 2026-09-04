@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from sql_agent.exposure import ExposureMode
 from sql_agent.metrics import (
     CompleteMetrics,
     ExperimentChecks,
@@ -13,6 +12,7 @@ from sql_agent.metrics import (
     records_from_json,
     records_to_json,
 )
+from sql_agent.types import ExposureMode
 
 
 def success(

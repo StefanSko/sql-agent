@@ -8,8 +8,8 @@ from pydantic import TypeAdapter
 from pydantic_ai.mcp import MCPToolset
 from pydantic_ai.toolsets import AbstractToolset, FilteredToolset
 
-from sql_agent.db_mcp import DbMcp
-from sql_agent.mcp_client import parse_tool_result
+from sql_agent.mcp.client import parse_tool_result
+from sql_agent.mcp.server import DbMcp
 from sql_agent.types import Catalog, ExposureMode
 
 DepsT = TypeVar("DepsT")

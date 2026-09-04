@@ -5,10 +5,9 @@ import os
 import pytest
 
 from sql_agent.agent import RequestDeps, build_agent, ollama_model, run_agent
-from sql_agent.db_mcp import create_db_mcp
-from sql_agent.exposure import ExposureMode
+from sql_agent.mcp.server import create_db_mcp
 from sql_agent.settings import Dsn, Settings
-from sql_agent.types import QueryOk
+from sql_agent.types import ExposureMode, QueryOk
 
 pytestmark = pytest.mark.e2e
 

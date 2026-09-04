@@ -11,7 +11,7 @@ from fastapi.responses import HTMLResponse, StreamingResponse
 from baseline.hand_rolled.agent import run_loop
 from baseline.hand_rolled.mcp_backend import FastMcpBackend
 from baseline.hand_rolled.openai_model import OpenAICompatibleModel
-from sql_agent.db_mcp import create_db_mcp
+from sql_agent.mcp.server import create_db_mcp
 from sql_agent.settings import Settings
 
 _INDEX = Path(__file__).with_name("index.html")

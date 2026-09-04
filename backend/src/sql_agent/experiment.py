@@ -17,8 +17,8 @@ from pydantic_ai.models import Model
 from pydantic_ai.models.openai import OpenAIChatModelSettings
 
 from sql_agent.agent import AgentRun, RequestDeps, build_agent, ollama_model, run_agent
-from sql_agent.db_mcp import create_db_mcp
-from sql_agent.mcp_client import parse_tool_result
+from sql_agent.mcp.client import parse_tool_result
+from sql_agent.mcp.server import create_db_mcp
 from sql_agent.metrics import (
     CompleteMetrics,
     ExperimentChecks,
