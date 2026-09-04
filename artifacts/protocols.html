@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SQL Agent — MCP Protocol Eras</title>
+  <style>
+    :root {
+      --night:#101828; --night2:#182230; --paper:#f5f2e9; --card:#fffdf8;
+      --ink:#17211d; --muted:#66736d; --line:#d5d8d0; --legacy:#e36b43;
+      --legacy-soft:#fff0e9; --modern:#087a62; --modern-soft:#dff3eb;
+      --cyan:#53c8d8; --gold:#f4c95d; --violet:#7867d9; --shadow:0 18px 55px rgba(16,24,40,.10);
+    }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body {
+      margin:0; color:var(--ink); background:
+        radial-gradient(circle at 8% 4%, rgba(83,200,216,.18), transparent 27rem),
+        linear-gradient(rgba(23,33,29,.032) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(23,33,29,.032) 1px, transparent 1px), var(--paper);
+      background-size:auto, 28px 28px, 28px 28px, auto;
+      font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      line-height:1.5;
+    }
+    a { color:inherit; }
+    code, pre, .mono { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
+    .wrap { width:min(1180px,calc(100% - 32px)); margin:auto; }
+    nav { position:sticky; top:0; z-index:20; color:white; background:rgba(16,24,40,.96); border-bottom:1px solid #344054; backdrop-filter:blur(14px); }
+    nav .wrap { min-height:58px; display:flex; align-items:center; gap:20px; }
+    .brand { margin-right:auto; font-weight:900; letter-spacing:-.035em; }
+    nav a { color:#b7c2d3; text-decoration:none; font-size:13px; font-weight:750; }
+    nav a[aria-current="page"] { color:var(--cyan); }
+    header { padding:82px 0 60px; color:white; background:
+      radial-gradient(circle at 82% 30%,rgba(83,200,216,.17),transparent 24rem),
+      linear-gradient(115deg,rgba(120,103,217,.20),transparent 55%),var(--night); }
+    .eyebrow { color:var(--cyan); font:850 12px/1 ui-monospace,monospace; letter-spacing:.15em; text-transform:uppercase; }
+    h1 { margin:18px 0 22px; max-width:1000px; font-size:clamp(52px,8.6vw,104px); line-height:.86; letter-spacing:-.073em; }
+    h1 em { color:var(--gold); font-style:normal; }
+    .lead { max-width:820px; margin:0; color:#c3cedd; font-size:clamp(18px,2vw,23px); }
+    .era-key { margin-top:30px; display:flex; gap:10px; flex-wrap:wrap; }
+    .era-key span { padding:8px 11px; border:1px solid #41506a; border-radius:999px; color:#e9eef6; font:750 11px/1 ui-monospace,monospace; }
+    section { padding:52px 0; }
+    .head { display:grid; grid-template-columns:.8fr 1.2fr; gap:36px; align-items:end; margin-bottom:28px; }
+    h2 { margin:0; font-size:clamp(34px,5.2vw,62px); line-height:.96; letter-spacing:-.055em; }
+    .head p { margin:0; max-width:680px; color:var(--muted); font-size:16px; }
+    .naming { display:grid; grid-template-columns:1fr 1fr; border:1px solid var(--line); border-radius:20px; overflow:hidden; box-shadow:var(--shadow); }
+    .naming article { padding:27px; background:var(--card); }
+    .naming article:last-child { color:white; background:var(--night2); }
+    .naming small { display:block; margin-bottom:8px; color:var(--modern); font:850 10px/1 ui-monospace,monospace; letter-spacing:.1em; text-transform:uppercase; }
+    .naming article:last-child small { color:var(--cyan); }
+    .naming b { display:block; font-size:24px; letter-spacing:-.035em; }
+    .naming p { margin:8px 0 0; color:var(--muted); font-size:14px; }
+    .naming article:last-child p { color:#b9c5d5; }
+    .eras { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .era { overflow:hidden; border:1px solid var(--line); border-radius:22px; background:var(--card); box-shadow:0 12px 38px rgba(16,24,40,.07); }
+    .era-top { padding:25px; color:white; background:var(--legacy); }
+    .era.modern .era-top { background:var(--modern); }
+    .era-top small { font:850 10px/1 ui-monospace,monospace; letter-spacing:.11em; text-transform:uppercase; opacity:.86; }
+    .era-top h3 { margin:8px 0 5px; font-size:34px; line-height:1; letter-spacing:-.05em; }
+    .era-top p { margin:0; opacity:.88; }
+    .sequence { padding:24px; display:grid; gap:9px; }
+    .message { min-height:58px; padding:12px 14px; display:grid; grid-template-columns:82px 22px 1fr; align-items:center; border:1px solid var(--line); border-radius:12px; background:#faf9f4; }
+    .message .from { color:var(--muted); font:800 9px/1.25 ui-monospace,monospace; text-transform:uppercase; }
+    .message .arrow { color:var(--legacy); font-weight:950; }
+    .modern .message .arrow { color:var(--modern); }
+    .message b { font:800 12px/1.35 ui-monospace,monospace; overflow-wrap:anywhere; }
+    .message span { display:block; margin-top:3px; color:var(--muted); font-size:11px; }
+    .held { margin:0 24px 24px; padding:14px 16px; border-left:5px solid var(--legacy); background:var(--legacy-soft); color:#75412f; font-size:13px; }
+    .modern .held { border-color:var(--modern); background:var(--modern-soft); color:#245d50; }
+    .held b { display:block; color:var(--ink); }
+    .comparison { border:1px solid var(--line); border-radius:20px; overflow:hidden; background:var(--card); }
+    .row { display:grid; grid-template-columns:190px 1fr 1fr; }
+    .row > div { padding:17px 19px; border-right:1px solid var(--line); border-bottom:1px solid var(--line); }
+    .row > div:last-child { border-right:0; }
+    .row:last-child > div { border-bottom:0; }
+    .row.header { color:white; background:var(--night); font:850 11px/1.2 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.07em; }
+    .row .label { color:var(--muted); background:#f0eee7; font:800 10px/1.3 ui-monospace,monospace; text-transform:uppercase; }
+    .row b { display:block; margin-bottom:3px; font-size:14px; }
+    .row span { color:var(--muted); font-size:12px; }
+    .packet-zone { color:white; background:var(--night); }
+    .packet-zone .head p { color:#b6c1d2; }
+    .packets { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .packet { border:1px solid #36445d; border-radius:18px; overflow:hidden; background:#141f31; }
+    .packet h3 { margin:0; padding:17px 20px; border-bottom:1px solid #36445d; color:var(--gold); font-size:18px; }
+    .packet.modern-packet h3 { color:#74dfc6; }
+    pre { margin:0; padding:20px; overflow:auto; color:#dce6f3; font-size:11px; line-height:1.65; }
+    .packet-note { padding:14px 20px; border-top:1px solid #36445d; color:#aebbd0; font-size:12px; }
+    .impact { display:grid; grid-template-columns:1fr 80px 1fr; align-items:stretch; }
+    .state { padding:25px; border:1px solid var(--line); border-radius:18px; background:var(--card); }
+    .state small { color:var(--muted); font:800 10px/1 ui-monospace,monospace; text-transform:uppercase; }
+    .state h3 { margin:9px 0 17px; font-size:27px; letter-spacing:-.045em; }
+    .state code { display:block; padding:10px 12px; border-radius:9px; background:#ece9df; font-size:12px; }
+    .state ul { margin:17px 0 0; padding-left:19px; color:var(--muted); font-size:13px; }
+    .state li { margin:8px 0; }
+    .swap { display:grid; place-content:center; color:var(--modern); font-size:32px; font-weight:950; }
+    .truth { margin-top:16px; padding:20px 22px; border-radius:15px; color:white; background:linear-gradient(100deg,var(--modern),#195d82); }
+    .truth b { display:block; font:900 11px/1 ui-monospace,monospace; letter-spacing:.08em; text-transform:uppercase; }
+    .truth span { display:block; margin-top:7px; color:#e4fff8; }
+    .concepts { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+    .concept { padding:22px; border:1px solid var(--line); border-radius:17px; background:var(--card); }
+    .concept small { color:var(--modern); font:850 10px/1 ui-monospace,monospace; letter-spacing:.08em; text-transform:uppercase; }
+    .concept h3 { margin:12px 0 8px; font-size:23px; letter-spacing:-.04em; }
+    .concept p { margin:0; color:var(--muted); font-size:13px; }
+    .concept code { color:var(--modern); }
+    .code-path { margin-top:16px; display:grid; grid-template-columns:1fr 1fr; gap:1px; overflow:hidden; border:1px solid #36445d; border-radius:18px; color:#dce6f3; background:#36445d; }
+    .code-path article { padding:22px; background:var(--night); }
+    .code-path small { color:var(--cyan); font:850 10px/1 ui-monospace,monospace; letter-spacing:.08em; text-transform:uppercase; }
+    .code-path h3 { margin:9px 0 12px; color:white; font-size:20px; }
+    .code-path pre { padding:0; font-size:11px; white-space:pre-wrap; }
+    .fit-note { margin-top:16px; padding:18px 20px; border-left:5px solid var(--gold); background:#fff7dc; color:#665324; font-size:13px; }
+    .fit-note b { color:var(--ink); }
+    .decision-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+    .decision { position:relative; min-height:210px; padding:22px; border:1px solid var(--line); border-radius:17px; background:var(--card); }
+    .decision::before { content:""; position:absolute; left:0; right:0; top:0; height:5px; border-radius:17px 17px 0 0; background:var(--modern); }
+    .decision:nth-child(2)::before { background:var(--gold); }
+    .decision:nth-child(3)::before { background:var(--violet); }
+    .decision:nth-child(4)::before { background:var(--legacy); }
+    .decision small { color:var(--muted); font:800 10px/1 ui-monospace,monospace; text-transform:uppercase; }
+    .decision h3 { margin:13px 0 9px; font-size:22px; letter-spacing:-.035em; }
+    .decision p { margin:0; color:var(--muted); font-size:13px; }
+    .migration { margin-top:15px; display:grid; grid-template-columns:52px 1fr; gap:0; border:1px solid var(--line); border-radius:17px; overflow:hidden; background:var(--card); }
+    .migration .num { display:grid; place-content:center; color:white; background:var(--modern); font:900 17px/1 ui-monospace,monospace; }
+    .migration .body { padding:15px 18px; border-bottom:1px solid var(--line); }
+    .migration .num:not(:nth-last-child(2)) { border-bottom:1px solid rgba(255,255,255,.22); }
+    .migration .body:last-child { border-bottom:0; }
+    .migration b { display:block; font-size:15px; }
+    .migration span { color:var(--muted); font-size:12px; }
+    .sources { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+    .source { min-height:155px; padding:18px; border-top:4px solid var(--modern); background:rgba(255,253,248,.88); }
+    .source small { color:var(--muted); font:800 9px/1 ui-monospace,monospace; text-transform:uppercase; }
+    .source h3 { margin:8px 0; font-size:17px; }
+    .source p { margin:0 0 10px; color:var(--muted); font-size:12px; }
+    .source a { color:var(--modern); text-decoration:none; border-bottom:1px solid currentColor; font:750 11px/1.35 ui-monospace,monospace; overflow-wrap:anywhere; }
+    footer { padding:30px 0 44px; border-top:1px solid var(--line); color:var(--muted); font-size:12px; }
+    @media(max-width:860px) {
+      .head,.naming { grid-template-columns:1fr; }
+      .row { grid-template-columns:135px 1fr 1fr; }
+      .concepts,.decision-grid { grid-template-columns:1fr 1fr; }
+      .sources { grid-template-columns:1fr 1fr; }
+    }
+    @media(max-width:660px) {
+      nav a:not([aria-current]) { display:none; }
+      .eras,.packets,.concepts,.code-path,.decision-grid,.sources { grid-template-columns:1fr; }
+      .impact { grid-template-columns:1fr; }
+      .swap { height:60px; transform:rotate(90deg); }
+      .comparison { border-radius:12px; }
+      .row { display:block; border-bottom:1px solid var(--line); }
+      .row > div { border-right:0; border-bottom:1px solid var(--line); }
+      .row.header > div:first-child { display:none; }
+      .row:last-child > div { border-bottom:1px solid var(--line); }
+      .row:last-child > div:last-child { border-bottom:0; }
+    }
+    @media print { nav { position:static; } .era,.packet,.decision,.state { break-inside:avoid; } }
+  </style>
+</head>
+<body>
+  <nav><div class="wrap"><div class="brand">SQL AGENT / FIELD GUIDE</div><a href="architecture.html">Architecture</a><a href="call-stack.html">Call stack</a><a href="benchmarks.html">Benchmarks</a><a href="protocols.html" aria-current="page">Protocols</a><a href="verdict.html">Verdict</a></div></nav>
+
+  <header>
+    <div class="wrap">
+      <div class="eyebrow">MCP field note · protocol transition</div>
+      <h1 aria-label="Handshake to sessionless">Handshake to<br><em>sessionless.</em></h1>
+      <p class="lead">MCP’s modern protocol removes transport sessions, not the MCP boundary or model context cost. See what changed—and compare FastMCP 4, direct tools, deferred discovery, and the 2026 Code Mode / CLI / Skills idea for this SQL agent.</p>
+      <div class="era-key"><span>LEGACY ≤ 2025-11-25</span><span>MODERN 2026-07-28</span><span>FASTMCP 4 · DUAL ERA</span><span>CODE MODE ≠ AGENT SKILLS</span></div>
+    </div>
+  </header>
+
+  <main>
+    <section class="wrap">
+      <div class="head"><h2>First, name the layers.</h2><p>“MCP v2” is useful shorthand, but it conflates an SDK release with a date-versioned wire specification. Keeping the names separate makes migration claims testable.</p></div>
+      <div class="naming">
+        <article><small>wire contract</small><b>MCP protocol <code>2026-07-28</code></b><p>The modern, sessionless protocol revision. Earlier revisions through <code>2025-11-25</code> use the initialize handshake and a connection-scoped session.</p></article>
+        <article><small>Python implementation</small><b>MCP Python SDK v2 + FastMCP 4</b><p>SDK v2 implements the modern protocol. FastMCP 4 builds on it and serves modern and legacy clients from the same server.</p></article>
+      </div>
+    </section>
+
+    <section class="wrap">
+      <div class="head"><h2>Two ways to begin.</h2><p>The old era negotiates once and keeps connection context. The modern era discovers support, then makes each operation self-describing and independently serviceable.</p></div>
+      <div class="eras">
+        <article class="era">
+          <div class="era-top"><small>handshake era · ≤ 2025-11-25</small><h3>Open, initialize, hold.</h3><p>The connection establishes the protocol context.</p></div>
+          <div class="sequence">
+            <div class="message"><div class="from">client → server</div><div class="arrow">→</div><div><b>initialize</b><span>version + capabilities + client identity</span></div></div>
+            <div class="message"><div class="from">server → client</div><div class="arrow">←</div><div><b>InitializeResult</b><span>negotiated version + server capabilities</span></div></div>
+            <div class="message"><div class="from">client → server</div><div class="arrow">→</div><div><b>notifications/initialized</b><span>handshake complete</span></div></div>
+            <div class="message"><div class="from">client ↔ server</div><div class="arrow">↔</div><div><b>tools/list · tools/call · callbacks</b><span>requests share the established session</span></div></div>
+          </div>
+          <div class="held"><b>What stays alive?</b>Protocol version, capabilities, session identity, and a backchannel for server-initiated requests.</div>
+        </article>
+
+        <article class="era modern">
+          <div class="era-top"><small>modern era · 2026-07-28</small><h3>Discover, send, release.</h3><p>Every operation carries its own protocol context.</p></div>
+          <div class="sequence">
+            <div class="message"><div class="from">client → server</div><div class="arrow">→</div><div><b>server/discover</b><span>the default auto-negotiation probe</span></div></div>
+            <div class="message"><div class="from">client → any replica</div><div class="arrow">→</div><div><b>tools/list + request <code>_meta</code></b><span>version and capabilities travel with the request</span></div></div>
+            <div class="message"><div class="from">client → any replica</div><div class="arrow">→</div><div><b>tools/call + request <code>_meta</code></b><span>no session affinity required</span></div></div>
+            <div class="message"><div class="from">server → client</div><div class="arrow">←</div><div><b>complete response</b><span>the request owns no continuing connection state</span></div></div>
+          </div>
+          <div class="held"><b>What stays alive?</b>Only explicit application state. There is no protocol session or server-to-client request backchannel.</div>
+        </article>
+      </div>
+    </section>
+
+    <section class="wrap">
+      <div class="head"><h2>What actually changed?</h2><p>Sessionless does not mean featureless. It relocates continuity from an implicit transport session into explicit requests, result cycles, stores, and extensions.</p></div>
+      <div class="comparison">
+        <div class="row header"><div>concern</div><div>handshake era</div><div>modern era</div></div>
+        <div class="row"><div class="label">negotiation</div><div><b><code>initialize</code> handshake</b><span>Negotiated once per connection.</span></div><div><b><code>server/discover</code> or direct version pin</b><span>FastMCP’s auto mode probes, then falls back when needed.</span></div></div>
+        <div class="row"><div class="label">request context</div><div><b>Connection-scoped</b><span>Later calls rely on established protocol state.</span></div><div><b>Self-contained <code>_meta</code></b><span>Version and client capabilities accompany every request.</span></div></div>
+        <div class="row"><div class="label">HTTP session</div><div><b><code>Mcp-Session-Id</code></b><span>The server tracks a protocol session.</span></div><div><b>No protocol session ID</b><span>Any compatible replica can answer.</span></div></div>
+        <div class="row"><div class="label">server callbacks</div><div><b>Backchannel available</b><span>Sampling, roots, and imperative elicitation can be server initiated.</span></div><div><b>Server-initiated requests removed</b><span>Interaction becomes return-and-call-again rather than pause-and-callback.</span></div></div>
+        <div class="row"><div class="label">user input</div><div><b>Tool pauses for <code>ctx.elicit()</code></b><span>Answer returns over the live session.</span></div><div><b>Tool returns <code>InputRequiredResult</code></b><span>The client submits a fresh continuation call.</span></div></div>
+        <div class="row"><div class="label">state</div><div><b>Session state can persist implicitly</b><span>Convenient, but tied to the connection or server instance.</span></div><div><b>Application state must be explicit</b><span>Use authenticated session handles and shared stores when continuity matters.</span></div></div>
+        <div class="row"><div class="label">scaling</div><div><b>Affinity or shared session machinery</b><span>Otherwise the next request may land where its session does not exist.</span></div><div><b>Ordinary load balancing</b><span>Fresh requests can land on different replicas.</span></div></div>
+      </div>
+    </section>
+
+    <section class="packet-zone">
+      <div class="wrap">
+        <div class="head"><h2>Context moved into the request.</h2><p>These envelopes are intentionally abbreviated. The important difference is ownership: legacy setup establishes context; modern calls carry it.</p></div>
+        <div class="packets">
+          <article class="packet">
+            <h3>Legacy initialization</h3>
+            <pre>{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "initialize",
+  "params": {
+    "protocolVersion": "2025-11-25",
+    "capabilities": { ... },
+    "clientInfo": { ... }
+  }
+}
+
+// Later tool calls use the negotiated session.</pre>
+            <div class="packet-note">One setup exchange gives later messages their protocol meaning.</div>
+          </article>
+          <article class="packet modern-packet">
+            <h3>Modern tool operation</h3>
+            <pre>{
+  "jsonrpc": "2.0",
+  "id": 7,
+  "method": "tools/call",
+  "params": {
+    "name": "run_query",
+    "arguments": { "sql": "SELECT ..." },
+    "_meta": {
+      "io.modelcontextprotocol/protocolVersion":
+        "2026-07-28",
+      "io.modelcontextprotocol/clientCapabilities":
+        { ... }
+    }
+  }
+}</pre>
+            <div class="packet-note">Each request carries enough context to be dispatched independently.</div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="wrap">
+      <div class="head"><h2>What FastMCP 4 changes here.</h2><p>This repository currently locks FastMCP 3.4.7. Moving to FastMCP 4 upgrades the Python SDK and makes the in-memory client negotiate <code>2026-07-28</code> automatically.</p></div>
+      <div class="impact">
+        <article class="state">
+          <small>checked-in probe</small><h3>FastMCP 3 · handshake</h3>
+          <code>fastmcp 3.4.7 → mcp 1.29</code>
+          <ul><li><code>MCPToolset(FastMCP)</code> opens a legacy client session.</li><li>Prefetch opens a separate client lifecycle.</li><li>The evidence in the verdict was gathered on this stack.</li></ul>
+        </article>
+        <div class="swap">→</div>
+        <article class="state">
+          <small>upgrade candidate</small><h3>FastMCP 4 · sessionless</h3>
+          <code>fastmcp 4.x → mcp 2.x</code>
+          <ul><li>Default <code>mode="auto"</code> negotiates the modern era in memory.</li><li>The same server can still serve legacy clients.</li><li>An isolated compatibility run passed the 58-test default suite.</li></ul>
+        </article>
+      </div>
+      <div class="truth"><b>The architectural truth</b><span>Stateless MCP is still MCP. Pydantic AI still uses a FastMCP client, discovers tool schemas, dispatches <code>tools/call</code>, and converts results. FastMCP 4 removes session affinity; direct <code>FunctionToolset</code> removes the protocol boundary.</span></div>
+    </section>
+
+    <section class="wrap">
+      <div class="head"><h2>The “bash / skill” idea has three layers.</h2><p>The February 2026 proposal was Cloudflare’s server-side <b>Code Mode</b>. It belongs to the same progressive-disclosure family as CLI exploration and Agent Skills, but they solve different problems and can still retain MCP underneath.</p></div>
+      <div class="concepts">
+        <article class="concept"><small>capability compression</small><h3>Code Mode</h3><p>Expose fixed <code>search(code)</code> and <code>execute(code)</code> tools. Generated code explores a large typed API and filters intermediate data inside a locked-down isolate. Cloudflare reduced 2,500+ endpoint definitions to roughly 1,000 fixed tokens. Server-side Code Mode is still an MCP server.</p></article>
+        <article class="concept"><small>procedural disclosure</small><h3>CLI + Agent Skills</h3><p>A small skill catalog is always visible; the matching <code>SKILL.md</code>, references, and scripts load on demand. A self-documenting CLI reveals commands through <code>--help</code>. Skills are instructions and resources—not a transport or execution sandbox. MCPorter can put a CLI in front of MCP, but does not remove MCP internally.</p></article>
+        <article class="concept"><small>schema disclosure</small><h3>Deferred tool search</h3><p>Pydantic AI can transparently mark any <code>FunctionToolset</code> or <code>MCPToolset</code> as <code>.defer_loading()</code>. Supported providers search natively; this Ollama/OpenAI-chat path gets a local <code>search_tools</code> fallback. Only matched schemas become callable.</p></article>
+      </div>
+      <div class="fit-note"><b>Do not collapse these into “replace MCP with skills.”</b> Code Mode changes the model-facing API; a CLI changes invocation ergonomics; Skills package reusable know-how; deferred loading hides schemas until discovery. Any of them may sit above direct Python or above MCP.</div>
+    </section>
+
+    <section class="packet-zone">
+      <div class="wrap">
+        <div class="head"><h2>What would it look like here?</h2><p>Preserve the existing read-only database core in every arm. Only the model-facing adapter changes; the model-facing runner and generated code never receive the DSN.</p></div>
+        <div class="code-path">
+          <article><small>skill + restricted CLI arm</small><h3>Progressively load procedure, then invoke</h3><pre>available skill: sql-analysis
+  ↓ load sql-analysis/SKILL.md
+sandboxed command allowlist:
+  dbctl catalog --json
+  dbctl query --stdin
+  ↓
+ReadOnlyDatabase → QueryResult</pre></article>
+          <article><small>server-side Code Mode arm</small><h3>Search schema, execute in an isolate</h3><pre>search_schema(code: str)
+  sandbox binding: catalog
+execute(code: str)
+  sandbox binding: db.query(sql)
+  ↓
+ReadOnlyDatabase → QueryResult
+
+no filesystem · no env · no network</pre></article>
+        </div>
+        <div class="truth"><b>The security boundary</b><span>Never expose unrestricted host <code>bash</code> from this web service. A useful CLI arm needs an allowlisted command runner; a real Code Mode arm needs a resource-bounded isolate with only <code>catalog</code> and <code>db.query</code> bindings. Otherwise context savings buy a much larger exfiltration and command-execution surface.</span></div>
+      </div>
+    </section>
+
+    <section class="wrap">
+      <div class="head"><h2>Which choice fits this app?</h2><p>The current winner already prefetches a small catalog and exposes only <code>run_query</code>. That makes this almost the opposite of Cloudflare’s 2,500-endpoint case.</p></div>
+      <div class="decision-grid">
+        <article class="decision"><small>recommended now</small><h3>Direct FunctionToolset</h3><p>Remove the local protocol tax while preserving typed schemas, results, retries, and the database safety core. This matches the checked-in verdict.</p></article>
+        <article class="decision"><small>remote consumer becomes real</small><h3>FastMCP 4</h3><p>Keep interoperability and gain sessionless replicas. It improves transport deployment, not prompt size.</p></article>
+        <article class="decision"><small>cheap context experiment</small><h3>Deferred loading</h3><p><code>toolset.defer_loading()</code> is the transparent first test when tool count grows. With one visible query tool today, search likely adds a round trip rather than saving context.</p></article>
+        <article class="decision"><small>future cross-system analyst</small><h3>Code Mode / Skills</h3><p>Reconsider when dozens of APIs or large intermediate results enter the app. One always-used SQL skill has no selection benefit, while code execution adds sandbox operations and asks Gemma to write reliable code.</p></article>
+      </div>
+      <div class="fit-note"><b>Bounded recommendation:</b> do not implement full Bash or Code Mode for the current product path. Add <code>FunctionToolset</code> as the production candidate; use deferred loading as the smallest transparent ablation; keep Code Mode as a measured future arm, not a claimed optimization.</div>
+    </section>
+
+    <section class="wrap">
+      <div class="head"><h2>How to test the third path honestly.</h2><p>Build adapters behind the same typed database contract and run the existing workload. Do not compare Cloudflare’s published 2,500-endpoint savings directly with this four-tool service.</p></div>
+      <div class="migration">
+        <div class="num">1</div><div class="body"><b>Extract one typed database port</b><span>Move <code>list_tables</code>, <code>get_catalog</code>, and <code>run_query</code> behind a narrow read-only service reused by every adapter.</span></div>
+        <div class="num">2</div><div class="body"><b>Establish the direct baseline</b><span>Wrap bound methods in <code>FunctionToolset</code>; preserve descriptions, union results, row caps, timeout, and call tracing.</span></div>
+        <div class="num">3</div><div class="body"><b>Add transparent deferred discovery</b><span>Run the granular direct or MCP toolset through <code>.defer_loading()</code>; record the local <code>search_tools</code> call and newly revealed schemas.</span></div>
+        <div class="num">4</div><div class="body"><b>Prototype restricted execution—not host Bash</b><span>Either use an allowlisted <code>dbctl</code> runner plus an Agent Skill, or a real isolate with only catalog/query bindings. Treat them as separate arms.</span></div>
+        <div class="num">5</div><div class="body"><b>Gate on total economics</b><span>Compare correctness, safety, model requests, total input tokens, latency, result bytes reaching the model, sandbox startup, and implementation/operations cost.</span></div>
+      </div>
+    </section>
+
+    <section class="wrap">
+      <div class="head"><h2>Safe upgrade path.</h2><p>Treat the dependency bump as a new experimental arm. Compatibility is promising, but the original verdict remains bounded to FastMCP 3 until equivalent evidence is recorded.</p></div>
+      <div class="migration">
+        <div class="num">1</div><div class="body"><b>Require FastMCP 4 explicitly</b><span><code>uv add 'fastmcp&gt;=4.0.1,&lt;5'</code>; MCP SDK v2 and <code>mcp-types</code> arrive transitively.</span></div>
+        <div class="num">2</div><div class="body"><b>Remove compatibility warnings</b><span>Change protocol model reads such as <code>inputSchema</code> to <code>input_schema</code>.</span></div>
+        <div class="num">3</div><div class="body"><b>Prove the negotiated era</b><span>Assert <code>client.protocol_version == "2026-07-28"</code> in one in-memory acceptance test.</span></div>
+        <div class="num">4</div><div class="body"><b>Re-run safety and exposure evidence</b><span>Check typed union results, masking, call traces, prefetched catalog, and the real-model matrix.</span></div>
+        <div class="num">5</div><div class="body"><b>Compare against direct tools separately</b><span>Do not confuse “new MCP” with “no MCP”; they answer different architectural questions.</span></div>
+      </div>
+    </section>
+
+    <section class="wrap">
+      <div class="head"><h2>Sources and seams.</h2><p>Protocol claims come from official MCP and FastMCP documentation; context alternatives come from their primary proposals and framework documentation. Project links locate the current integration seams.</p></div>
+      <div class="sources">
+        <article class="source"><small>official protocol</small><h3>MCP 2026-07-28 changelog</h3><p>Session removal, per-request metadata, and handshake removal.</p><a href="https://modelcontextprotocol.io/specification/2026-07-28/changelog">modelcontextprotocol.io ↗</a></article>
+        <article class="source"><small>official framework</small><h3>What’s new in FastMCP 4</h3><p>Dual-era negotiation and sessionless deployment behavior.</p><a href="https://gofastmcp.com/getting-started/whats-new">gofastmcp.com ↗</a></article>
+        <article class="source"><small>2026 proposal</small><h3>Cloudflare server-side Code Mode</h3><p>Two tools, sandboxed generated code, and fixed model-facing context for a 2,500-endpoint API.</p><a href="https://blog.cloudflare.com/code-mode-mcp/">blog.cloudflare.com ↗</a></article>
+        <article class="source"><small>design precursor</small><h3>Anthropic code execution with MCP</h3><p>Filesystem discovery, result filtering, state, skills, and the sandbox tradeoff.</p><a href="https://www.anthropic.com/engineering/code-execution-with-mcp">anthropic.com ↗</a></article>
+        <article class="source"><small>open format</small><h3>Agent Skills specification</h3><p>Metadata, on-demand instructions, resources, and optional scripts through progressive disclosure.</p><a href="https://agentskills.io/specification">agentskills.io ↗</a></article>
+        <article class="source"><small>transparent option</small><h3>Pydantic AI tool search</h3><p>Deferred loading with native provider search or a local <code>search_tools</code> fallback.</p><a href="https://ai.pydantic.dev/tools-advanced/#tool-search">ai.pydantic.dev ↗</a></article>
+        <article class="source"><small>project seam</small><h3>Exposure builder</h3><p><code>MCPToolset</code>, filtering, and the separate prefetch client lifecycle.</p><a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/exposure.py#L24" data-code-ref="../src/sql_agent/exposure.py#L24">exposure.py:L24 ↗</a></article>
+        <article class="source"><small>project seam</small><h3>MCP result decoder</h3><p>Typed parsing and the structured <code>result</code> root that remains under FastMCP 4.</p><a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/src/sql_agent/mcp_client.py#L7" data-code-ref="../src/sql_agent/mcp_client.py#L7">mcp_client.py:L7 ↗</a></article>
+      </div>
+    </section>
+  </main>
+
+  <footer><div class="wrap">Standalone protocol field note · researched against MCP <code>2026-07-28</code>, FastMCP 4.0.1, and the checked-in FastMCP 3 probe · September 2026.</div></footer>
+</body>
+</html>

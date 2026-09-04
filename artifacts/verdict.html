@@ -86,6 +86,8 @@
     .sources { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
     .source { border-top:4px solid var(--violet); padding:17px; background:var(--card); min-height:138px; }.source small{color:var(--muted);font:800 10px/1 ui-monospace,monospace;text-transform:uppercase}.source h3{margin:8px 0;font-size:17px}.source p{color:var(--muted);font-size:12px}.source a{color:var(--violet);text-decoration:none;font:750 11px/1.3 ui-monospace,monospace}
     .caveat { margin-top:15px; border:1px solid #e7c687; background:#fff3d7; border-radius:13px; padding:17px; color:#665029; font-size:13px; }
+    .validation-cta { display:block; margin-top:14px; padding:16px 19px; border-radius:12px; background:var(--dark); color:white; text-decoration:none; font-weight:850; }
+    .validation-cta span { float:right; color:var(--lime); }
     footer { padding:30px 0 45px; border-top:1px solid var(--line); color:var(--muted); font-size:12px; }
     @media(max-width:930px){.hero,.head{grid-template-columns:1fr}.thesis{max-width:370px}.verdicts,.sources{grid-template-columns:1fr 1fr}.improvement{grid-template-columns:55px 1fr}.example{grid-column:2}.roadmap{grid-template-columns:1fr 1fr}.phase:first-child,.phase:last-child{border-radius:0}.phase::after{display:none}}
     @media(max-width:680px){nav a:not([aria-current]){display:none}.verdicts,.sources,.gates{grid-template-columns:1fr}.equation,.transformation{grid-template-columns:1fr}.operator{height:40px}.big-arrow{transform:rotate(90deg)}.improvement{grid-template-columns:44px 1fr}.example{grid-column:1/-1;grid-template-columns:1fr}.to{transform:rotate(90deg)}.roadmap{grid-template-columns:1fr}.thesis{min-height:280px}}
@@ -93,7 +95,7 @@
   </style>
 </head>
 <body>
-  <nav><div class="wrap"><div class="brand">SQL AGENT / FIELD GUIDE</div><a href="architecture.html">Architecture</a><a href="call-stack.html">Call stack</a><a href="benchmarks.html">Benchmarks</a><a href="verdict.html" aria-current="page">Verdict</a></div></nav>
+  <nav><div class="wrap"><div class="brand">SQL AGENT / FIELD GUIDE</div><a href="architecture.html">Architecture</a><a href="call-stack.html">Call stack</a><a href="benchmarks.html">Benchmarks</a><a href="protocols.html">Protocols</a><a href="verdict.html" aria-current="page">Verdict</a></div></nav>
 
   <header>
     <div class="wrap hero">
@@ -200,6 +202,7 @@
         <article class="source"><small>full verdict</small><h3>Probe conclusions</h3><p>P1–P8, evidence boundaries, framework friction, and final recommendation.</p><a href="https://github.com/StefanSko/sql-agent/blob/b3072c2/notes/verdict.md#L1" data-code-ref="../notes/verdict.md#L1">notes/verdict.md ↗</a></article>
       </div>
       <div class="caveat"><b>Do not over-read the diagram.</b> “Replace” means “for the one-process, one-browser product represented here.” It is not a claim that MCP or AG-UI are poor abstractions. Their value rises sharply when the consumers and deployment boundaries they standardize actually exist.</div>
+      <a class="validation-cta" href="validation/index.html">Challenge this verdict with five proposed experiments <span>OPEN VALIDATION LAB →</span></a>
     </section>
   </main>
 

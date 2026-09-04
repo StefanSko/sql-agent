@@ -65,3 +65,4 @@ Standalone visual artifacts are under [`artifacts/`](artifacts/):
 - [Call stack and interface type journey](artifacts/call-stack.html)
 - [Benchmark design, statistics, and result](artifacts/benchmarks.html)
 - [Motivated verdict and visual improvement paths](artifacts/verdict.html)
+- [Five proposed experiments to validate or overturn the verdict](artifacts/validation/index.html)
