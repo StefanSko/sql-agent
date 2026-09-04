@@ -23,7 +23,8 @@ async def test_real_ollama_executes_safe_join_aggregation(seeded_dsn: Dsn) -> No
     agent = build_database_agent(ollama_model(settings), database)
 
     result = await agent.run(
-        "How many trips were taken by member riders? Use the database tools and report the number.",
+        "How many trips were taken by member riders? Use the database tools, alias the "
+        "numeric result member_trips, and report the number.",
         deps=RequestDeps(request_id="ollama-smoke"),
     )
 
