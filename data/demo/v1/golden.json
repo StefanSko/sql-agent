@@ -1,0 +1,561 @@
+{
+  "version": "demo-v1",
+  "schema_sha256": "36fc60019abbe1d29f71eca4d208d589eec965e78c2d8f22eb723291f7f79599",
+  "seed_sha256": "0a35a0d8a3ff16c8ba24e38671a6b0f082ff26d589718becaf62768ed6a8854e",
+  "questions_sha256": "c5a51fdb443283359a66e3ba4e958dbdb32933bee19fe9520289acec47de347a",
+  "cases": [
+    {
+      "case_id": "d01-total",
+      "sql_sha256": "69f0c9316835aef3bc65b21a7b259773f656ae4a80d70b552fb2e486ae1b6eec",
+      "result": {
+        "rows": [
+          {
+            "values": {
+              "total_trips": 100000
+            }
+          }
+        ],
+        "kind": "ok"
+      }
+    },
+    {
+      "case_id": "d02-plan-share",
+      "sql_sha256": "92043af25f3c6f8eb640dee73ac91fd1ade60769909d2e448c2288995848a951",
+      "result": {
+        "rows": [
+          {
+            "values": {
+              "plan": "casual",
+              "trip_count": 30026,
+              "trip_pct": 30.03
+            }
+          },
+          {
+            "values": {
+              "plan": "member",
+              "trip_count": 69974,
+              "trip_pct": 69.97
+            }
+          }
+        ],
+        "kind": "ok"
+      }
+    },
+    {
+      "case_id": "d03-popular-origins",
+      "sql_sha256": "db70412ac2cda311f70b208120151043ca96242b103f533023a38fd3ba4338f4",
+      "result": {
+        "rows": [
+          {
+            "values": {
+              "station_id": 71,
+              "name": "Station 071",
+              "departures": 1843
+            }
+          },
+          {
+            "values": {
+              "station_id": 6,
+              "name": "Station 006",
+              "departures": 1835
+            }
+          },
+          {
+            "values": {
+              "station_id": 16,
+              "name": "Station 016",
+              "departures": 1829
+            }
+          },
+          {
+            "values": {
+              "station_id": 61,
+              "name": "Station 061",
+              "departures": 1820
+            }
+          },
+          {
+            "values": {
+              "station_id": 1,
+              "name": "Station 001",
+              "departures": 1816
+            }
+          }
+        ],
+        "kind": "ok"
+      }
+    },
+    {
+      "case_id": "d04-monthly-volume",
+      "sql_sha256": "b05d61a155dc9fd91dc93325c3e4cd5808ca4ff7936f7a567f0ac6c0501042d4",
+      "result": {
+        "rows": [
+          {
+            "values": {
+              "month": "2025-01",
+              "trip_count": 1564
+            }
+          },
+          {
+            "values": {
+              "month": "2025-02",
+              "trip_count": 3081
+            }
+          },
+          {
+            "values": {
+              "month": "2025-03",
+              "trip_count": 4271
+            }
+          },
+          {
+            "values": {
+              "month": "2025-04",
+              "trip_count": 4681
+            }
+          },
+          {
+            "values": {
+              "month": "2025-05",
+              "trip_count": 4672
+            }
+          },
+          {
+            "values": {
+              "month": "2025-06",
+              "trip_count": 10192
+            }
+          },
+          {
+            "values": {
+              "month": "2025-07",
+              "trip_count": 11436
+            }
+          },
+          {
+            "values": {
+              "month": "2025-08",
+              "trip_count": 13977
+            }
+          },
+          {
+            "values": {
+              "month": "2025-09",
+              "trip_count": 7732
+            }
+          },
+          {
+            "values": {
+              "month": "2025-10",
+              "trip_count": 10601
+            }
+          },
+          {
+            "values": {
+              "month": "2025-11",
+              "trip_count": 13541
+            }
+          },
+          {
+            "values": {
+              "month": "2025-12",
+              "trip_count": 14252
+            }
+          }
+        ],
+        "kind": "ok"
+      }
+    },
+    {
+      "case_id": "d05-morning-imbalance",
+      "sql_sha256": "56c38a729b47557e573b894f7bd341f401d24cd56dfd235ee5ab2889749edd49",
+      "result": {
+        "rows": [
+          {
+            "values": {
+              "station_id": 54,
+              "departures": 352,
+              "arrivals": 11,
+              "net_departures": 341
+            }
+          },
+          {
+            "values": {
+              "station_id": 18,
+              "departures": 348,
+              "arrivals": 11,
+              "net_departures": 337
+            }
+          },
+          {
+            "values": {
+              "station_id": 72,
+              "departures": 341,
+              "arrivals": 10,
+              "net_departures": 331
+            }
+          },
+          {
+            "values": {
+              "station_id": 59,
+              "departures": 333,
+              "arrivals": 8,
+              "net_departures": 325
+            }
+          },
+          {
+            "values": {
+              "station_id": 43,
+              "departures": 333,
+              "arrivals": 10,
+              "net_departures": 323
+            }
+          }
+        ],
+        "kind": "ok"
+      }
+    },
+    {
+      "case_id": "d06-latest-distance-change",
+      "sql_sha256": "c2777ca22ee5c33410aa15c1da48bc7032cf27b8aa7041168ef460fc09216972",
+      "result": {
+        "rows": [
+          {
+            "values": {
+              "rider_id": 1565,
+              "latest_trip_id": 86897,
+              "previous_trip_id": 51567,
+              "increase_km": 11.3
+            }
+          },
+          {
+            "values": {
+              "rider_id": 1818,
+              "latest_trip_id": 52257,
+              "previous_trip_id": 75548,
+              "increase_km": 11.3
+            }
+          },
+          {
+            "values": {
+              "rider_id": 49,
+              "latest_trip_id": 24416,
+              "previous_trip_id": 24877,
+              "increase_km": 11.1
+            }
+          },
+          {
+            "values": {
+              "rider_id": 370,
+              "latest_trip_id": 96298,
+              "previous_trip_id": 53229,
+              "increase_km": 10.9
+            }
+          },
+          {
+            "values": {
+              "rider_id": 852,
+              "latest_trip_id": 79038,
+              "previous_trip_id": 43186,
+              "increase_km": 10.8
+            }
+          }
+        ],
+        "kind": "ok"
+      }
+    },
+    {
+      "case_id": "d07-cohort-retention",
+      "sql_sha256": "1acb2a4e458d3ac9df831010822f0f99119e39b180922bf7a701b8e47bf21dcb",
+      "result": {
+        "rows": [
+          {
+            "values": {
+              "cohort_month": "2025-01",
+              "cohort_size": 188,
+              "retained_riders": 170,
+              "retention_pct": 90.43
+            }
+          },
+          {
+            "values": {
+              "cohort_month": "2025-02",
+              "cohort_size": 171,
+              "retained_riders": 157,
+              "retention_pct": 91.81
+            }
+          },
+          {
+            "values": {
+              "cohort_month": "2025-03",
+              "cohort_size": 189,
+              "retained_riders": 177,
+              "retention_pct": 93.65
+            }
+          },
+          {
+            "values": {
+              "cohort_month": "2025-04",
+              "cohort_size": 182,
+              "retained_riders": 170,
+              "retention_pct": 93.41
+            }
+          },
+          {
+            "values": {
+              "cohort_month": "2025-05",
+              "cohort_size": 187,
+              "retained_riders": 171,
+              "retention_pct": 91.44
+            }
+          },
+          {
+            "values": {
+              "cohort_month": "2025-06",
+              "cohort_size": 181,
+              "retained_riders": 172,
+              "retention_pct": 95.03
+            }
+          },
+          {
+            "values": {
+              "cohort_month": "2025-07",
+              "cohort_size": 188,
+              "retained_riders": 179,
+              "retention_pct": 95.21
+            }
+          },
+          {
+            "values": {
+              "cohort_month": "2025-08",
+              "cohort_size": 188,
+              "retained_riders": 175,
+              "retention_pct": 93.09
+            }
+          },
+          {
+            "values": {
+              "cohort_month": "2025-09",
+              "cohort_size": 182,
+              "retained_riders": 173,
+              "retention_pct": 95.05
+            }
+          },
+          {
+            "values": {
+              "cohort_month": "2025-10",
+              "cohort_size": 188,
+              "retained_riders": 178,
+              "retention_pct": 94.68
+            }
+          },
+          {
+            "values": {
+              "cohort_month": "2025-11",
+              "cohort_size": 156,
+              "retained_riders": 147,
+              "retention_pct": 94.23
+            }
+          }
+        ],
+        "kind": "ok"
+      }
+    },
+    {
+      "case_id": "d08-speed-anomalies",
+      "sql_sha256": "2a15c844779f42d073db3db39b0f08f2e5681517a4cc7fcafd9cbfbb301d8969",
+      "result": {
+        "rows": [
+          {
+            "values": {
+              "anomalous_trips": 10
+            }
+          }
+        ],
+        "kind": "ok"
+      }
+    },
+    {
+      "case_id": "h01-inactive",
+      "sql_sha256": "adeb2f230ed43a2472746208f335f86e719c57760fa6c55aa612593e3fd45526",
+      "result": {
+        "rows": [
+          {
+            "values": {
+              "inactive_riders": 100
+            }
+          }
+        ],
+        "kind": "ok"
+      }
+    },
+    {
+      "case_id": "h02-unused-stations",
+      "sql_sha256": "99076afc1cc741fe835f39fd7d1f594278df8fe56414bf7134efbae0353a3c3a",
+      "result": {
+        "rows": [
+          {
+            "values": {
+              "station_id": 99,
+              "name": "Station 099"
+            }
+          },
+          {
+            "values": {
+              "station_id": 100,
+              "name": "Station 100"
+            }
+          }
+        ],
+        "kind": "ok"
+      }
+    },
+    {
+      "case_id": "h03-plan-averages",
+      "sql_sha256": "50ade0bebd889ec723c59bec15ae7e1895b6a81e8b67cb0018f9f5e87181952d",
+      "result": {
+        "rows": [
+          {
+            "values": {
+              "plan": "casual",
+              "avg_minutes": 34.06,
+              "avg_km": 6.22
+            }
+          },
+          {
+            "values": {
+              "plan": "member",
+              "avg_minutes": 34.04,
+              "avg_km": 6.2
+            }
+          }
+        ],
+        "kind": "ok"
+      }
+    },
+    {
+      "case_id": "h04-cross-district",
+      "sql_sha256": "0504da236a2d3819a12b9be958dddf3b404537198f2ce5c126fd7414965dce0b",
+      "result": {
+        "rows": [
+          {
+            "values": {
+              "cross_district_pct": 89.41
+            }
+          }
+        ],
+        "kind": "ok"
+      }
+    },
+    {
+      "case_id": "h05-district-growth",
+      "sql_sha256": "5d976bcbc2bc34794e26e5f94c048c98fe7d3a9ed3ba4c956af560ace5c29655",
+      "result": {
+        "rows": [
+          {
+            "values": {
+              "district": "Central",
+              "november_trips": 4710,
+              "december_trips": 5162,
+              "growth_pct": 9.6
+            }
+          }
+        ],
+        "kind": "ok"
+      }
+    },
+    {
+      "case_id": "h06-consecutive-days",
+      "sql_sha256": "4d34fd147b4d9f523c18187d130bbe84fc63c2c16b09d38b53fd26e1f6905b68",
+      "result": {
+        "rows": [
+          {
+            "values": {
+              "rider_id": 540,
+              "longest_streak": 30
+            }
+          },
+          {
+            "values": {
+              "rider_id": 419,
+              "longest_streak": 24
+            }
+          },
+          {
+            "values": {
+              "rider_id": 1195,
+              "longest_streak": 24
+            }
+          },
+          {
+            "values": {
+              "rider_id": 1300,
+              "longest_streak": 24
+            }
+          },
+          {
+            "values": {
+              "rider_id": 1490,
+              "longest_streak": 24
+            }
+          }
+        ],
+        "kind": "ok"
+      }
+    },
+    {
+      "case_id": "h07-busiest-week",
+      "sql_sha256": "189ba1afb2308b2bb3311d72232c7236ce6557c15aa3cbf6a40075bad2a19592",
+      "result": {
+        "rows": [
+          {
+            "values": {
+              "window_end": "2025-11-29",
+              "trip_count": 3553.0
+            }
+          }
+        ],
+        "kind": "ok"
+      }
+    },
+    {
+      "case_id": "h08-duration-percentile",
+      "sql_sha256": "3b82877b819166eeed9aa980798cf5f474ab4d63dda0fe1b4beb002a481153ed",
+      "result": {
+        "rows": [
+          {
+            "values": {
+              "district": "Central",
+              "p90_minutes": 49.0
+            }
+          },
+          {
+            "values": {
+              "district": "East",
+              "p90_minutes": 49.0
+            }
+          },
+          {
+            "values": {
+              "district": "North",
+              "p90_minutes": 49.0
+            }
+          },
+          {
+            "values": {
+              "district": "South",
+              "p90_minutes": 49.0
+            }
+          },
+          {
+            "values": {
+              "district": "West",
+              "p90_minutes": 49.0
+            }
+          }
+        ],
+        "kind": "ok"
+      }
+    }
+  ]
+}

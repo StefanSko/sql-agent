@@ -1,0 +1,224 @@
+{
+  "metadata": {
+    "executed_at": "2026-09-08T10:37:58.053118+00:00",
+    "dataset_version": "demo-v1",
+    "golden_sha256": "b0f8f4cb3d256f6129faf999f61099fb7be71fa032aeebbcb5e7773da759b04c",
+    "split": "development",
+    "model": {
+      "name": "gemma4:12b-it-q4_K_M",
+      "digest": "4eb23ef187e2c5462566d6a1d3bbbc2f1346d0b4327cbb66d58fffbcc9b2b05c",
+      "modified_at": "2026-08-22T13:34:39.1681947+02:00",
+      "family": "gemma4",
+      "parameter_size": "11.9B",
+      "quantization_level": "Q4_K_M",
+      "context_length": 262144
+    },
+    "repetitions": 1,
+    "timeout_seconds": 90.0,
+    "max_output_tokens": 512,
+    "row_cap": 200,
+    "statement_timeout_ms": 5000,
+    "model_thinking": false,
+    "temperature": 0.0,
+    "pydantic_ai_version": "2.35.1",
+    "fastmcp_version": "4.0.2"
+  },
+  "records": [
+    {
+      "case_id": "d01-total",
+      "difficulty": "easy",
+      "repetition": 0,
+      "seed": 42,
+      "elapsed_seconds": 8.259072333999939,
+      "outcome": {
+        "execution": {
+          "answer": {
+            "answer": "100000",
+            "evidence": [
+              "total_trips=100000"
+            ]
+          },
+          "mcp_calls": [
+            "get_catalog",
+            "run_query"
+          ],
+          "query_results": [
+            {
+              "rows": [
+                {
+                  "values": {
+                    "total_trips": 100000
+                  }
+                }
+              ],
+              "kind": "ok"
+            }
+          ],
+          "latency_seconds": 8.256617208000534,
+          "first_event_seconds": 8.256617208000534,
+          "model_request_count": 2,
+          "input_tokens": 1423,
+          "output_tokens": 81,
+          "retries": 0,
+          "queries": [
+            {
+              "sql": "SELECT count(*) as total_trips FROM trips WHERE EXTRACT(YEAR FROM started_at) = 2025;",
+              "result": {
+                "rows": [
+                  {
+                    "values": {
+                      "total_trips": 100000
+                    }
+                  }
+                ],
+                "kind": "ok"
+              }
+            }
+          ]
+        },
+        "kind": "result_correct"
+      }
+    },
+    {
+      "case_id": "d05-morning-imbalance",
+      "difficulty": "hard",
+      "repetition": 0,
+      "seed": 42,
+      "elapsed_seconds": 24.38111562499944,
+      "outcome": {
+        "execution": {
+          "answer": {
+            "answer": "The five stations with the largest net departures (departures minus arrivals) are: station_id 54 (341), 18 (337), 72 (331), 59 (325), and 43 (323).",
+            "evidence": [
+              "station_id=54,departures=352,arrivals=11,net_departures=341",
+              "station_id=18,departures=348,arrivals=11,net_departures=337",
+              "station_id=72,departures=341,arrivals=10,net_departures=331",
+              "station_id=59,departures=333,arrivals=8,net_departures=325",
+              "station_id=43,departures=333,arrivals=10,net_departures=323"
+            ]
+          },
+          "mcp_calls": [
+            "get_catalog",
+            "run_query"
+          ],
+          "query_results": [
+            {
+              "rows": [
+                {
+                  "values": {
+                    "station_id": 54,
+                    "departures": 352,
+                    "arrivals": 11,
+                    "net_departures": 341
+                  }
+                },
+                {
+                  "values": {
+                    "station_id": 18,
+                    "departures": 348,
+                    "arrivals": 11,
+                    "net_departures": 337
+                  }
+                },
+                {
+                  "values": {
+                    "station_id": 72,
+                    "departures": 341,
+                    "arrivals": 10,
+                    "net_departures": 331
+                  }
+                },
+                {
+                  "values": {
+                    "station_id": 59,
+                    "departures": 333,
+                    "arrivals": 8,
+                    "net_departures": 325
+                  }
+                },
+                {
+                  "values": {
+                    "station_id": 43,
+                    "departures": 333,
+                    "arrivals": 10,
+                    "net_departures": 323
+                  }
+                }
+              ],
+              "kind": "ok"
+            }
+          ],
+          "latency_seconds": 24.378737416998774,
+          "first_event_seconds": 24.378737416998774,
+          "model_request_count": 2,
+          "input_tokens": 1947,
+          "output_tokens": 501,
+          "retries": 0,
+          "queries": [
+            {
+              "sql": "SELECT \n    s.station_id,\n    COUNT(CASE WHEN t.start_station_id = s.station_id THEN 1 END) as departures,\n    COUNT(CASE WHEN t.end_station_id = s.station_id THEN 1 END) as arrivals,\n    COUNT(CASE WHEN t.start_station_id = s.station_id THEN 1 END) - COUNT(CASE WHEN t.end_station_id = s.station_id THEN 1 END) as net_departures\nFROM stations s\nLEFT JOIN trips t ON (t.start_station_id = s.station_id OR t.end_station_id = s.station_id)\nWHERE EXTRACT(DOW FROM t.started_at) BETWEEN 1 AND 5\n  AND EXTRACT(HOUR FROM t.started_at) >= 7\n  AND EXTRACT(HOUR FROM t.started_at) < 10\n  AND EXTRACT(YEAR FROM t.started_at) = 2025\nGROUP BY s.station_id\nORDER BY net_departures DESC, s.station_id ASC\nLIMIT 5;",
+              "result": {
+                "rows": [
+                  {
+                    "values": {
+                      "station_id": 54,
+                      "departures": 352,
+                      "arrivals": 11,
+                      "net_departures": 341
+                    }
+                  },
+                  {
+                    "values": {
+                      "station_id": 18,
+                      "departures": 348,
+                      "arrivals": 11,
+                      "net_departures": 337
+                    }
+                  },
+                  {
+                    "values": {
+                      "station_id": 72,
+                      "departures": 341,
+                      "arrivals": 10,
+                      "net_departures": 331
+                    }
+                  },
+                  {
+                    "values": {
+                      "station_id": 59,
+                      "departures": 333,
+                      "arrivals": 8,
+                      "net_departures": 325
+                    }
+                  },
+                  {
+                    "values": {
+                      "station_id": 43,
+                      "departures": 333,
+                      "arrivals": 10,
+                      "net_departures": 323
+                    }
+                  }
+                ],
+                "kind": "ok"
+              }
+            }
+          ]
+        },
+        "kind": "result_correct"
+      }
+    },
+    {
+      "case_id": "d07-cohort-retention",
+      "difficulty": "expert",
+      "repetition": 0,
+      "seed": 42,
+      "elapsed_seconds": 90.00628379199952,
+      "outcome": {
+        "failure": "timeout",
+        "detail": "run exceeded configured timeout",
+        "kind": "run_failed"
+      }
+    }
+  ]
+}

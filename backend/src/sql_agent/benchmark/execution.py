@@ -11,7 +11,7 @@ from pydantic_ai.models import Model
 from pydantic_ai.models.openai import OpenAIChatModelSettings
 
 from sql_agent.agent import RequestDeps, build_agent
-from sql_agent.benchmark.exposure import prepare_exposure
+from sql_agent.benchmark.exposure import QueryAttempt, prepare_exposure
 from sql_agent.benchmark.types import ExposureMode
 from sql_agent.types import AgentAnswer, QueryResult
 
@@ -27,6 +27,7 @@ class BenchmarkRun:
     input_tokens: int
     output_tokens: int
     retries: int
+    queries: tuple[QueryAttempt, ...] = ()
 
 
 async def run_agent(
@@ -70,6 +71,7 @@ async def run_agent(
         model_request_count=usage.requests,
         input_tokens=usage.input_tokens,
         output_tokens=usage.output_tokens,
+        queries=tuple(setup.trace.queries),
         retries=sum(
             isinstance(part, RetryPromptPart) for message in messages for part in message.parts
         ),

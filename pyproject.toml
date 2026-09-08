@@ -19,6 +19,7 @@ dependencies = [
 [project.scripts]
 sql-agent = "sql_agent.__main__:main"
 sql-agent-benchmark = "sql_agent.benchmark.runner:main"
+sql-agent-demo = "sql_agent.benchmark.demo:main"
 
 [build-system]
 requires = ["uv_build>=0.8.17,<0.9.0"]

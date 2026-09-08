@@ -96,9 +96,30 @@ set -a; source .env.e2e; set +a
 uv run pytest -m e2e tests/e2e/test_ollama_smoke.py
 ```
 
-## Benchmark
+## Larger demo and reference benchmark
 
-The benchmark is development tooling, not a second application path:
+The tiny default fixture is for smoke tests. For **100 stations, 2,000 riders, and
+100,000 trips over a year**, with realistic variation and deliberate edge cases:
+
+```bash
+uv run sql-agent-demo serve  # same UI at :8000; owns an isolated temporary database
+uv run sql-agent-demo questions  # copy/paste development prompts, no answers
+uv run sql-agent-demo verify     # verify all 16 frozen answer keys, no model required
+uv run sql-agent-demo benchmark --repetitions 3
+uv run sql-agent-demo benchmark --split heldout --repetitions 3 --timeout 180
+```
+
+Stop the existing server first or use `serve --port 8001`. Model settings come from
+`.env`, but the demo never resets or uses your configured `SQL_AGENT_DSN`.
+
+See **[the dataset and benchmark guide](data/demo/v1/README.md)** for all 16 questions,
+easy→expert difficulty levels, reference SQL, complete expected results, split policy,
+and scoring. The eight held-out questions are opt-in. SQL result accuracy is scored
+separately from natural-language answer quality; the gold is not fed to the model.
+
+## Historical exposure benchmark
+
+The original benchmark remains development tooling, not a second application path:
 
 ```bash
 uv run sql-agent-benchmark run --repetitions 3

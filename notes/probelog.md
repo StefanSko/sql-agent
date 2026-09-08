@@ -1,5 +1,10 @@
 # Probe log
 
+- 2026-09-08 (demo/model): A three-case development-only Gemma smoke run on the frozen large dataset scored 2/3: total count and morning imbalance passed, cohort retention hit the 90-second cap; the timeout is retained as a failure, not retried away, and no held-out model evaluation was used for tuning.
+
+- 2026-09-08 (demo/data): The versioned large synthetic dataset uses SQL/MD5 rather than random state or checked-in bulk CSV; all 16 frozen reference tables are independently reproduced with standard-library Python, including retention, gaps-and-islands, and interpolated percentiles.
+- 2026-09-08 (demo/holdout): PGlite socket clients share prepared-statement state: a RED test found verifier SQL discoverable through pg_prepared_statements even after closing clients; benchmark-only orchestration now DEALLOCATEs verifier statements before model runs, without changing application DB access.
+
 - 2026-09-08 (frontend/assistant-ui): Followed the upstream with-ag-ui example using published packages rather than monorepo workspace dependencies; `useAgUiRuntime` plus `HttpAgent` owns SSE/history/cancellation, while React primitives work under Vite without Next.js.
 - 2026-09-08 (frontend/testing): Playwright's sync API owns a running event loop, so the page fixture explicitly depends on async PGlite seeding to avoid pytest-asyncio runner conflicts; real-browser tests now cross the live Python stack without Ollama.
 - 2026-09-08 (frontend/deployment): Docker daemon is unavailable and the CLI lacks Compose here; production assets are exercised through live FastAPI, but the new multi-stage container build could not be executed locally.

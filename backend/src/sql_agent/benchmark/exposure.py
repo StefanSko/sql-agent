@@ -23,11 +23,18 @@ class BenchmarkCall:
     query_result: QueryResult | None = None
 
 
+@dataclass(frozen=True)
+class QueryAttempt:
+    sql: str
+    result: QueryResult
+
+
 @dataclass
 class BenchmarkTrace:
     """Mutable trace scoped to one benchmark run."""
 
     calls: list[BenchmarkCall] = field(default_factory=list)
+    queries: list[QueryAttempt] = field(default_factory=list)
 
     async def call_tool(
         self,
@@ -39,6 +46,11 @@ class BenchmarkTrace:
         result = await call_tool(name, args)
         query_result = _parse_query_result(result) if name == "run_query" else None
         self.calls.append(BenchmarkCall(tool_name=name, query_result=query_result))
+        if query_result is not None:
+            sql = args["sql"]
+            if not isinstance(sql, str):
+                raise TypeError("query tool SQL must be a string")
+            self.queries.append(QueryAttempt(sql, query_result))
         return result
 
 

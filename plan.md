@@ -57,6 +57,13 @@ comparisons, but exposure selection is not an application setting.
 - `sql_agent.benchmark` owns workload loading, PGlite setup, exposure comparisons,
   tracing, metrics, ranking, and benchmark CLI behavior.
 - Benchmark code may depend on runtime code. Runtime code must not import benchmark code.
+- `sql_agent.benchmark.demo` owns a separate deterministic large demo and execution-accuracy
+  runner; `demo_workload` parses versioned questions/gold and compares full query results.
+  `data/demo/v1` holds the frozen schema, SQL generator, development/held-out questions,
+  reference SQL, and checksummed expected rows. These never enter production prompts or
+  database tables. The small smoke fixture and historical exposure benchmark stay unchanged.
+- `sql-agent-demo serve` is development orchestration: it owns a disposable PGlite instance
+  and starts the normal FastAPI application, never resetting the configured external DSN.
 
 ## Validation
 
@@ -72,6 +79,11 @@ from a real browser, including multi-turn history, cancellation, errors, validat
 answers, and safe Markdown/mobile rendering. Setup requires `npm --prefix frontend ci`
 and `uv run playwright install --with-deps chromium`; frontend checks use
 `npm --prefix frontend run check`.
+Default large-dataset checks independently calculate all 16 reference answers in Python,
+verify the SQL through MCP, pin dataset invariants/determinism, and test complete-result
+scoring, held-out opt-in, checksum drift, timeout recording, and oracle-context isolation.
+The runner clears PGlite's shared prepared-statement cache after reference verification so
+reference SQL is not queryable by the model through database session metadata.
 Real Ollama and composed deployment checks remain opt-in e2e tests.
 
 ## Current status

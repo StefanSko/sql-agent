@@ -1,0 +1,66 @@
+[
+  {
+    "case_id": "d01-total", "split": "development", "difficulty": "easy", "ordering": "ordered",
+    "prompt": "How many trips started in calendar 2025? Return one row with column total_trips."
+  },
+  {
+    "case_id": "d02-plan-share", "split": "development", "difficulty": "easy", "ordering": "ordered",
+    "prompt": "For trips starting in 2025, count trips by rider plan and compute each plan's percentage of all trips, rounded to two decimal places. Return plan, trip_count, trip_pct; sort by plan ascending."
+  },
+  {
+    "case_id": "d03-popular-origins", "split": "development", "difficulty": "medium", "ordering": "ordered",
+    "prompt": "Which five stations had the most departures in 2025? Return station_id, name, departures. Sort by departures descending, breaking ties by station_id ascending."
+  },
+  {
+    "case_id": "d04-monthly-volume", "split": "development", "difficulty": "medium", "ordering": "ordered",
+    "prompt": "Show the number of trips starting in each calendar month of 2025. Include zero-trip months. Return month as a YYYY-MM string and trip_count, in month order."
+  },
+  {
+    "case_id": "d05-morning-imbalance", "split": "development", "difficulty": "hard", "ordering": "ordered",
+    "prompt": "Consider trips starting Monday through Friday from 07:00 inclusive to 10:00 exclusive during 2025. For each station count departures and arrivals from that same set of trips, including stations with zero counts. Which five have the largest departures minus arrivals? Return station_id, departures, arrivals, net_departures; sort net_departures descending then station_id ascending. Count arrivals by end station, not by arrival clock time."
+  },
+  {
+    "case_id": "d06-latest-distance-change", "split": "development", "difficulty": "hard", "ordering": "ordered",
+    "prompt": "For each rider with at least two trips in 2025, compare their latest trip's distance with their immediately previous trip. Order trips by started_at then trip_id to break timestamp ties. Return the five largest strictly positive increases, with columns rider_id, latest_trip_id, previous_trip_id, increase_km rounded to two decimals. Sort increase_km descending then rider_id ascending."
+  },
+  {
+    "case_id": "d07-cohort-retention", "split": "development", "difficulty": "expert", "ordering": "ordered",
+    "prompt": "For signup cohorts January through November 2025, what percentage of registered riders took at least one trip in the calendar month immediately after their signup month? The denominator includes every registered rider in the cohort, even riders with no trips. Return cohort_month as YYYY-MM, cohort_size, retained_riders, retention_pct rounded to two decimals. Include cohorts with zero retained riders; sort by cohort_month. Exclude December because January 2026 is not observed."
+  },
+  {
+    "case_id": "d08-speed-anomalies", "split": "development", "difficulty": "medium", "ordering": "ordered",
+    "prompt": "How many trips starting in 2025 have implied average speed strictly greater than 80 km/h? Use distance_km divided by elapsed hours, and exclude non-positive durations. Return one row with anomalous_trips."
+  },
+  {
+    "case_id": "h01-inactive", "split": "heldout", "difficulty": "easy", "ordering": "ordered",
+    "prompt": "How many registered riders took no trips starting in 2025? Return one row with inactive_riders."
+  },
+  {
+    "case_id": "h02-unused-stations", "split": "heldout", "difficulty": "medium", "ordering": "ordered",
+    "prompt": "List stations with neither a departure nor an arrival among trips starting in 2025. Return station_id and name, sorted by station_id."
+  },
+  {
+    "case_id": "h03-plan-averages", "split": "heldout", "difficulty": "medium", "ordering": "ordered",
+    "prompt": "For each rider plan, find the average duration in minutes and average distance in km of trips starting in 2025. Include all recorded trips, including anomalies and zero distances. Return plan, avg_minutes, avg_km, both averages rounded to two decimals; sort by plan ascending."
+  },
+  {
+    "case_id": "h04-cross-district", "split": "heldout", "difficulty": "medium", "ordering": "ordered",
+    "prompt": "What percentage of trips starting in 2025 began and ended in different station districts? Return one row with cross_district_pct rounded to two decimals. Use the origin and destination station districts, not the rider's home district."
+  },
+  {
+    "case_id": "h05-district-growth", "split": "heldout", "difficulty": "hard", "ordering": "ordered",
+    "prompt": "Which origin-station district had the largest percentage growth in trip departures from November to December 2025? Exclude districts with zero November trips. Return one row with district, november_trips, december_trips, growth_pct rounded to two decimals. Rank by unrounded growth descending, breaking ties alphabetically by district."
+  },
+  {
+    "case_id": "h06-consecutive-days", "split": "heldout", "difficulty": "expert", "ordering": "ordered",
+    "prompt": "Which five riders had the longest streak of consecutive calendar dates with at least one trip starting in 2025? Multiple trips on one date count as a single active day. Return rider_id and longest_streak as a number of days; sort longest_streak descending then rider_id ascending."
+  },
+  {
+    "case_id": "h07-busiest-week", "split": "heldout", "difficulty": "hard", "ordering": "ordered",
+    "prompt": "Considering every calendar date in 2025, including zero-trip dates, which date ended the busiest trailing seven-calendar-day window of trip starts? For January 1-6 use only the available dates in 2025. Return one row with window_end as YYYY-MM-DD and trip_count; break ties by earliest window_end."
+  },
+  {
+    "case_id": "h08-duration-percentile", "split": "heldout", "difficulty": "expert", "ordering": "ordered",
+    "prompt": "For each origin-station district, calculate the continuous 90th percentile of trip duration in minutes for trips starting in July 2025, including all recorded trips. Use linear interpolation between adjacent sorted durations, not a discrete percentile. Return district and p90_minutes rounded to two decimals; sort alphabetically by district."
+  }
+]

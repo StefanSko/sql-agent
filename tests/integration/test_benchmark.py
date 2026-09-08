@@ -84,6 +84,8 @@ async def test_all_exposure_modes_are_schema_generic_on_held_out_database(pglite
         )
         assert result.answer.answer == "There are 23 items."
         assert result.mcp_calls == expected_calls[mode]
+        assert result.queries[0].sql == "SELECT SUM(quantity) AS total FROM artifacts"
+        assert result.queries[0].result == result.query_results[0]
 
 
 def test_production_prompts_and_tool_descriptions_are_schema_generic() -> None:
