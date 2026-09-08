@@ -18,7 +18,8 @@ from ag_ui.core import (
     ToolCallStartEvent,
 )
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse, Response
+from fastapi.responses import FileResponse, HTMLResponse, Response
+from fastapi.staticfiles import StaticFiles
 from fastmcp import FastMCP
 from pydantic import ValidationError
 from pydantic_ai import AgentRunResult
@@ -38,7 +39,7 @@ from sql_agent.mcp.server import create_database_server
 from sql_agent.settings import Settings
 from sql_agent.types import AgentAnswer
 
-_FRONTEND_INDEX = Path(__file__).parents[3] / "frontend" / "index.html"
+_FRONTEND_DIST = Path(__file__).parents[3] / "frontend" / "dist"
 
 
 def create_app(
@@ -57,9 +58,19 @@ def create_app(
     agent = build_database_agent(model or ollama_model(resolved_settings), resolved_database)
     app = FastAPI(title="Schema-generic SQL agent")
 
+    frontend_index = _FRONTEND_DIST / "index.html"
+    if (_FRONTEND_DIST / "assets").is_dir():
+        app.mount("/assets", StaticFiles(directory=_FRONTEND_DIST / "assets"), name="assets")
+
     @app.get("/", response_class=HTMLResponse)
-    async def index() -> str:
-        return _FRONTEND_INDEX.read_text(encoding="utf-8")
+    async def index() -> Response:
+        if not frontend_index.is_file():
+            return HTMLResponse(
+                "Frontend not built. Run npm --prefix frontend ci &amp;&amp; "
+                "npm --prefix frontend run build, then restart the server.",
+                status_code=503,
+            )
+        return FileResponse(frontend_index, headers={"Cache-Control": "no-cache"})
 
     @app.get("/health")
     async def health() -> dict[str, str]:

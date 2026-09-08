@@ -9,7 +9,7 @@ stateless MCP v2.
 ## Runtime
 
 ```text
-browser -> AG-UI endpoint -> Pydantic AI agent -> FastMCP database tools -> PostgreSQL
+assistant-ui (React) -> AG-UI endpoint -> Pydantic AI agent -> FastMCP database tools -> PostgreSQL
                                   |
                                   -> configured model provider
 ```
@@ -35,7 +35,21 @@ comparisons, but exposure selection is not an application setting.
 - Query outcomes are explicit typed variants: success, truncation, or safe rejection.
 - Every MCP client uses FastMCP 4 modern protocol negotiation. MCP v2 has no initialize
   handshake or retained protocol session.
-- The browser resends AG-UI history; the server does not own conversation persistence.
+- assistant-ui's AG-UI runtime owns transport, cancellation, and full history resend,
+  including tool call/result pairing; application UI code does not parse SSE or assemble history.
+- Each browser page owns one in-memory conversation; reload creates a fresh thread.
+  The server does not own conversation persistence.
+
+## Frontend and deployment
+
+- React + Vite, `@assistant-ui/react`, `@assistant-ui/react-ag-ui`, and
+  `@assistant-ui/react-markdown` replace the hand-written browser client.
+- The UI composes assistant-ui thread/composer/message primitives with a small
+  expandable tool renderer. No browser tools, persistence, or multi-thread sidebar.
+- Vite builds `frontend/dist`; FastAPI serves `/` and `/assets` alongside `/agui`
+  and `/health`. There is no catch-all route that could hide API/static-file errors.
+- Docker builds assets in a Node stage; the runtime image only needs Python.
+  Local development uses Vite hot reload and a configurable `/agui` proxy.
 
 ## Module boundaries
 
@@ -53,7 +67,12 @@ uv run ruff format . && uv run ruff check . && uv run ty check && uv run pytest
 ```
 
 The default acceptance path crosses AG-UI, Pydantic AI, modern MCP v2, FastMCP, and
-PGlite. Real Ollama and composed deployment checks remain opt-in e2e tests.
+PGlite. Default Chromium tests additionally build the frontend and exercise that path
+from a real browser, including multi-turn history, cancellation, errors, validated-only
+answers, and safe Markdown/mobile rendering. Setup requires `npm --prefix frontend ci`
+and `uv run playwright install --with-deps chromium`; frontend checks use
+`npm --prefix frontend run check`.
+Real Ollama and composed deployment checks remain opt-in e2e tests.
 
 ## Current status
 

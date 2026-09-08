@@ -19,7 +19,9 @@ The application has one runtime path:
 - `backend/src/sql_agent/mcp/server.py` owns all database access and SQL safety.
 - FastMCP 4 negotiates modern MCP v2 (`server/discover`) in stateless mode; no protocol session is
   retained between runs and no sidecar process is required.
-- `frontend/` is the small AG-UI browser client.
+- `frontend/` is a React/Vite app using assistant-ui primitives and its AG-UI runtime.
+  The framework owns SSE transport, conversation history, tool events, and cancellation;
+  application UI code only composes the thread, composer, Markdown, and tool display.
 
 Benchmark machinery is isolated under `backend/src/sql_agent/benchmark/`. It can
 compare historical granular, catalog, and prefetched tool surfaces, but none of those
@@ -30,11 +32,29 @@ modes leak into application settings or request handling.
 ```bash
 uv sync --all-groups
 npm --prefix backend ci
+npm --prefix frontend ci
+npm --prefix frontend run build
 cp .env.example .env  # configure the database and Ollama
 uv run sql-agent
 ```
 
-Open <http://127.0.0.1:8000>.
+Open <http://127.0.0.1:8000>. Use Node.js 24 for frontend builds.
+FastAPI serves `frontend/dist` at `/` and `/assets`, with `/agui` on the same origin.
+Node is needed only to build the UI, not to serve it. The Dockerfile builds the UI in
+its own Node stage and copies only the static output into the Python runtime image.
+Without a frontend build, `/` returns an actionable 503; the API remains usable.
+
+### Frontend development
+
+Run `uv run sql-agent` in one terminal and `npm --prefix frontend run dev` in another.
+Open the Vite URL (normally <http://127.0.0.1:5173>) for hot reload. Vite proxies `/agui`
+to FastAPI; set `SQL_AGENT_DEV_API_URL` in the root `.env` if the API is elsewhere.
+This proxy setting is development-only and is not embedded in the browser bundle.
+Rebuild the UI to see changes when visiting FastAPI directly.
+
+The UI supports one in-memory conversation, expandable SQL tool arguments/results,
+Markdown answers, progress, Stop, and recoverable errors. Reloading starts a new
+conversation; there is no persistence, thread sidebar, or client-side tool execution.
 
 ## Configuration
 
@@ -54,11 +74,22 @@ Optional:
 
 ## Validation
 
+After installing the backend and frontend dependencies above:
+
 ```bash
+uv run playwright install --with-deps chromium  # once per environment
+npm --prefix frontend run check
 uv run ruff format . && uv run ruff check . && uv run ty check && uv run pytest
 ```
 
-The default suite uses PGlite and model doubles. The real-model smoke test is opt-in:
+The default suite uses PGlite and model doubles. Its Chromium integration tests build
+the frontend and drive the actual UI through a live FastAPI → AG-UI → Pydantic AI →
+MCP → PGlite path. They cover multi-turn tool history, validated answers, HTTP/run
+errors, cancellation, safe Markdown, mobile layout, and the Vite development proxy.
+No Ollama or Docker required.
+Run just those checks with `uv run pytest tests/integration/test_browser.py`.
+
+The real-model smoke test is opt-in:
 
 ```bash
 set -a; source .env.e2e; set +a

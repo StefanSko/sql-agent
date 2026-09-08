@@ -1,0 +1,28 @@
+{
+  "name": "sql-agent-ui",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc --noEmit && vite build",
+    "check": "tsc --noEmit && prettier --check .",
+    "format": "prettier --write ."
+  },
+  "dependencies": {
+    "@ag-ui/client": "^0.0.59",
+    "@assistant-ui/react": "^0.15.18",
+    "@assistant-ui/react-ag-ui": "^0.0.58",
+    "@assistant-ui/react-markdown": "^0.14.14",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.7",
+    "@vitejs/plugin-react": "^6.1.1",
+    "prettier": "^3.9.6",
+    "typescript": "^7.0.2",
+    "vite": "^8.2.2"
+  }
+}

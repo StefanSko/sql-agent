@@ -1,5 +1,9 @@
 # Probe log
 
+- 2026-09-08 (frontend/assistant-ui): Followed the upstream with-ag-ui example using published packages rather than monorepo workspace dependencies; `useAgUiRuntime` plus `HttpAgent` owns SSE/history/cancellation, while React primitives work under Vite without Next.js.
+- 2026-09-08 (frontend/testing): Playwright's sync API owns a running event loop, so the page fixture explicitly depends on async PGlite seeding to avoid pytest-asyncio runner conflicts; real-browser tests now cross the live Python stack without Ollama.
+- 2026-09-08 (frontend/deployment): Docker daemon is unavailable and the CLI lacks Compose here; production assets are exercised through live FastAPI, but the new multi-stage container build could not be executed locally.
+
 - 2026-08-27 (M0/P1/P4): Git contained no recoverable pre-framework source, so the concrete control had to be reconstructed and frozen under `baseline/hand_rolled/`; comparisons explicitly use that artifact rather than a remembered implementation.
 - 2026-08-27 (M0/P5): Current Pydantic AI 2.35 exposes MCP at `pydantic_ai.mcp` and AG-UI at `pydantic_ai.ui.ag_ui`, not the paths assumed by the plan; framework source inspection was needed to find the moved APIs.
 - 2026-08-27 (M0/P2): `pydantic-ai-slim[mcp]` installs only FastMCP client support; an in-process server fails at import until full `fastmcp` (or its server extra) is added.

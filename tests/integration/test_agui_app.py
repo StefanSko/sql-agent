@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import json
 from collections.abc import Iterator
+from pathlib import Path
 
+import pytest
 from fastapi.testclient import TestClient
 from pydantic import SecretStr
 from pydantic_ai.messages import ModelMessage
@@ -181,7 +183,14 @@ def test_agui_reports_completed_usage_to_server_side_sink(seeded_dsn: Dsn) -> No
     assert captured[0].input_tokens > 0
 
 
-def test_static_ui_renders_text_and_tool_events(seeded_dsn: Dsn) -> None:
+def test_static_ui_serves_built_assets_without_shadowing_api(
+    seeded_dsn: Dsn, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    dist = tmp_path / "dist"
+    (dist / "assets").mkdir(parents=True)
+    (dist / "index.html").write_text('<div id="root"></div>', encoding="utf-8")
+    (dist / "assets" / "app.js").write_text('console.log("app")', encoding="utf-8")
+    monkeypatch.setattr("sql_agent.app._FRONTEND_DIST", dist, raising=False)
     app = create_app(
         settings=settings(seeded_dsn),
         database=create_database_server(seeded_dsn),
@@ -190,9 +199,27 @@ def test_static_ui_renders_text_and_tool_events(seeded_dsn: Dsn) -> None:
 
     with TestClient(app) as client:
         response = client.get("/")
+        asset = client.get("/assets/app.js")
+        assert client.get("/health").json() == {"status": "ok"}
+        assert client.post("/agui", json={}).status_code == 422
+        assert client.get("/assets/missing.js").status_code == 404
+        assert client.get("/src/main.tsx").status_code == 404
+        assert client.get("/unknown").status_code == 404
 
     assert response.status_code == 200
-    assert "TEXT_MESSAGE_CONTENT" in response.text
-    assert "TOOL_CALL_START" in response.text
-    assert "TOOL_CALL_RESULT" in response.text
-    assert "toolCalls.find((call) => call.id === event.toolCallId)" in response.text
+    assert '<div id="root"></div>' in response.text
+    assert asset.status_code == 200
+    assert "javascript" in asset.headers["content-type"]
+    assert asset.text == 'console.log("app")'
+
+
+def test_missing_frontend_build_does_not_break_api(
+    seeded_dsn: Dsn, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr("sql_agent.app._FRONTEND_DIST", tmp_path / "missing", raising=False)
+    app = create_app(settings=settings(seeded_dsn), model=catalog_model())
+    with TestClient(app) as client:
+        assert client.get("/health").status_code == 200
+        response = client.get("/")
+        assert response.status_code == 503
+        assert "npm --prefix frontend run build" in response.text

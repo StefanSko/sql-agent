@@ -14,11 +14,16 @@ jobs:
           enable-cache: true
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: npm
-          cache-dependency-path: backend/package-lock.json
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
       - run: uv sync --all-groups --frozen
       - run: npm --prefix backend ci
+      - run: npm --prefix frontend ci
+      - run: npm --prefix frontend run check
+      - run: uv run playwright install --with-deps chromium
       - run: uv run ruff format --check .
       - run: uv run ruff check .
       - run: uv run ty check
