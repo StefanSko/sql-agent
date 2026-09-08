@@ -17,6 +17,7 @@ def test_settings_parse_required_environment(monkeypatch: pytest.MonkeyPatch) ->
     assert settings.dsn == Dsn("postgresql://sentinel:secret@db/probe")
     assert settings.model_name == "configured-model"
     assert settings.ollama_api_key.get_secret_value() == "configured-key"
+    assert settings.max_output_tokens == 512
     assert not hasattr(settings, "exposure_mode")
 
 

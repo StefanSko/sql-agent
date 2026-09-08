@@ -20,7 +20,8 @@ The production contract is deliberately narrow:
 2. The typed catalog is injected into that run's instructions.
 3. The model sees only `run_query(sql)`, which executes one bounded read-only statement.
 4. The agent returns a typed `AgentAnswer`.
-5. AG-UI streams text, tool lifecycle, completion, and error events.
+5. AG-UI streams database-tool lifecycle events and publishes only the final validated answer;
+   rejected model prose, internal output-tool calls, and failed partial text stay server-side.
 
 FastMCP retains the granular schema tools for interoperability and offline benchmark
 comparisons, but exposure selection is not an application setting.

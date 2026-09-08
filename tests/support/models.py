@@ -5,7 +5,14 @@ from collections.abc import AsyncIterator, Callable
 from dataclasses import dataclass, field
 from typing import Any
 
-from pydantic_ai.messages import ModelMessage, ModelResponse, TextPart, ToolCallPart, ToolReturnPart
+from pydantic_ai.messages import (
+    ModelMessage,
+    ModelResponse,
+    RetryPromptPart,
+    TextPart,
+    ToolCallPart,
+    ToolReturnPart,
+)
 from pydantic_ai.models.function import AgentInfo, DeltaToolCall, FunctionModel
 
 ModelFunction = Callable[[list[ModelMessage], AgentInfo], ModelResponse]
@@ -81,6 +88,27 @@ def catalog_model(seen: list[list[ModelMessage]] | None = None) -> FunctionModel
                 ]
             )
         return _final(info, "The database has three tables.", ("table_count=3",))
+
+    return streaming_function_model(respond)
+
+
+def retrying_catalog_model() -> FunctionModel:
+    def respond(messages: list[ModelMessage], info: AgentInfo) -> ModelResponse:
+        returns = _returns(messages)
+        if not returns:
+            return ModelResponse(
+                parts=[
+                    ToolCallPart("run_query", {"sql": "SELECT COUNT(*) AS table_count FROM trips"})
+                ]
+            )
+        retried = any(
+            isinstance(part, RetryPromptPart) for message in messages for part in message.parts
+        )
+        if not retried:
+            return ModelResponse(
+                parts=[TextPart("LEAKED rejected prose.\n\nevidence: table_count=8")]
+            )
+        return _final(info, "There are 8 trips.", ("table_count=8",))
 
     return streaming_function_model(respond)
 

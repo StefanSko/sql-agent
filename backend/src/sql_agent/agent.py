@@ -5,7 +5,7 @@ from typing import cast
 
 from fastmcp import Client, FastMCP
 from pydantic import TypeAdapter
-from pydantic_ai import Agent, RunContext
+from pydantic_ai import Agent, RunContext, ToolOutput
 from pydantic_ai.mcp import MCPToolset
 from pydantic_ai.models import Model
 from pydantic_ai.models.openai import OpenAIChatModel
@@ -19,11 +19,14 @@ from sql_agent.types import AgentAnswer, Catalog
 BASE_INSTRUCTIONS = """You answer natural-language questions using a read-only SQL database.
 Use schema information supplied in the instructions or available schema tools before writing
 PostgreSQL, then call run_query and base the answer on its rows. Never guess table or column names.
-If a query is rejected, explain the safe failure without inventing data. Finish with the required
-structured answer and concise evidence from tool results. For a scalar row, include an evidence
-entry exactly in the form column=value.
+If a query is rejected, explain the safe failure without inventing data. After enough query evidence
+is available, immediately call submit_answer exactly once. Never write the answer as plain text and
+never repeat a successful query. Only submit_answer.answer is shown to the user. Keep it concise,
+use plain text without Markdown, and do not wrap the whole answer in quotation marks. For a scalar
+row, include an evidence entry exactly in the form column=value.
 """
 
+FINAL_ANSWER_TOOL_NAME = "submit_answer"
 _DATABASE_TOOLS = frozenset({"run_query"})
 _CATALOG = TypeAdapter(Catalog)
 
@@ -64,7 +67,14 @@ def build_agent(
 ) -> Agent[RequestDeps, AgentAnswer]:
     agent = Agent(
         model,
-        output_type=AgentAnswer,
+        output_type=ToolOutput(
+            AgentAnswer,
+            name=FINAL_ANSWER_TOOL_NAME,
+            description=(
+                "Submit the concise user-facing answer and evidence after run_query succeeds. "
+                "Do not emit the answer as plain text before calling this tool."
+            ),
+        ),
         deps_type=RequestDeps,
         instructions=BASE_INSTRUCTIONS,
         retries=2,

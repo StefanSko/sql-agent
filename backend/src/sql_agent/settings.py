@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     ollama_api_key: SecretStr
     row_cap: PositiveInt = 200
     statement_timeout_ms: PositiveInt = 5_000
+    max_output_tokens: PositiveInt = 512
     agui_model_thinking: bool = False
 
     @classmethod

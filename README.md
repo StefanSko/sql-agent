@@ -49,6 +49,7 @@ Optional:
 
 - `SQL_AGENT_ROW_CAP` (default `200`)
 - `SQL_AGENT_STATEMENT_TIMEOUT_MS` (default `5000`)
+- `SQL_AGENT_MAX_OUTPUT_TOKENS` (default `512`)
 - `SQL_AGENT_AGUI_MODEL_THINKING` (default `false`)
 
 ## Validation

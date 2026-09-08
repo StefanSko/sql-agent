@@ -5,10 +5,22 @@ from functools import partial
 from pathlib import Path
 from uuid import uuid4
 
-from ag_ui.core import TextMessageContentEvent, TextMessageEndEvent, TextMessageStartEvent
+from ag_ui.core import (
+    BaseEvent,
+    RunErrorEvent,
+    RunFinishedEvent,
+    TextMessageContentEvent,
+    TextMessageEndEvent,
+    TextMessageStartEvent,
+    ToolCallArgsEvent,
+    ToolCallEndEvent,
+    ToolCallResultEvent,
+    ToolCallStartEvent,
+)
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, Response
 from fastmcp import FastMCP
+from pydantic import ValidationError
 from pydantic_ai import AgentRunResult
 from pydantic_ai.messages import ModelMessage, TextPart
 from pydantic_ai.models import Model
@@ -16,7 +28,12 @@ from pydantic_ai.models.openai import OpenAIChatModelSettings
 from pydantic_ai.ui.ag_ui import AGUIAdapter
 from pydantic_ai.usage import RunUsage
 
-from sql_agent.agent import RequestDeps, build_database_agent, ollama_model
+from sql_agent.agent import (
+    FINAL_ANSWER_TOOL_NAME,
+    RequestDeps,
+    build_database_agent,
+    ollama_model,
+)
 from sql_agent.mcp.server import create_database_server
 from sql_agent.settings import Settings
 from sql_agent.types import AgentAnswer
@@ -51,17 +68,57 @@ def create_app(
     @app.post("/agui")
     async def agui(request: Request) -> Response:
         request_id = request.headers.get("x-request-id") or str(uuid4())
-        return await AGUIAdapter.dispatch_request(
-            request,
-            agent=agent,
+        try:
+            adapter = await AGUIAdapter[RequestDeps, AgentAnswer].from_request(request, agent=agent)
+        except ValidationError as error:
+            try:
+                content = error.json()
+            except ValueError:
+                content = error.json(include_input=False)
+            return Response(content=content, media_type="application/json", status_code=422)
+        events = adapter.run_stream(
             deps=RequestDeps(request_id=request_id),
             model_settings=OpenAIChatModelSettings(
-                openai_reasoning_effort=(None if resolved_settings.agui_model_thinking else "none")
+                max_tokens=resolved_settings.max_output_tokens,
+                openai_reasoning_effort=(None if resolved_settings.agui_model_thinking else "none"),
             ),
             on_complete=partial(_answer_events, usage_sink=usage_sink),
         )
+        return adapter.streaming_response(_validated_answer_stream(events))
 
     return app
+
+
+async def _validated_answer_stream(events: AsyncIterator[BaseEvent]) -> AsyncIterator[BaseEvent]:
+    pending_text: list[BaseEvent] = []
+    hidden_tool_ids: set[str] = set()
+    async for event in events:
+        match event:
+            case TextMessageStartEvent():
+                pending_text = [event]
+            case TextMessageContentEvent() | TextMessageEndEvent():
+                if pending_text:
+                    pending_text.append(event)
+            case ToolCallStartEvent(tool_call_id=tool_call_id) if (
+                event.tool_call_name == FINAL_ANSWER_TOOL_NAME
+            ):
+                hidden_tool_ids.add(tool_call_id)
+            case (
+                ToolCallArgsEvent(tool_call_id=tool_call_id)
+                | ToolCallEndEvent(tool_call_id=tool_call_id)
+            ) if tool_call_id in hidden_tool_ids:
+                pass
+            case ToolCallResultEvent(tool_call_id=tool_call_id) if tool_call_id in hidden_tool_ids:
+                hidden_tool_ids.remove(tool_call_id)
+            case RunFinishedEvent():
+                for text_event in pending_text:
+                    yield text_event
+                yield event
+            case RunErrorEvent():
+                pending_text.clear()
+                yield event
+            case _:
+                yield event
 
 
 async def _answer_events(

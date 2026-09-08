@@ -11,7 +11,7 @@ from pydantic_ai.usage import RunUsage
 from sql_agent.app import create_app
 from sql_agent.mcp.server import create_database_server
 from sql_agent.settings import Dsn, Settings
-from tests.support.models import FailingStreamModel, catalog_model
+from tests.support.models import FailingStreamModel, catalog_model, retrying_catalog_model
 
 
 def settings(dsn: Dsn) -> Settings:
@@ -39,6 +39,19 @@ def events(response_text: str) -> Iterator[dict[str, object]]:
     for line in response_text.splitlines():
         if line.startswith("data: "):
             yield json.loads(line.removeprefix("data: "))
+
+
+def test_agui_rejects_malformed_request(seeded_dsn: Dsn) -> None:
+    app = create_app(
+        settings=settings(seeded_dsn),
+        database=create_database_server(seeded_dsn),
+        model=catalog_model(),
+    )
+
+    with TestClient(app, raise_server_exceptions=False) as client:
+        response = client.post("/agui", json={})
+
+    assert response.status_code == 422
 
 
 def test_agui_sequence_crosses_agent_mcp_and_pglite(seeded_dsn: Dsn) -> None:
@@ -112,7 +125,29 @@ def test_completion_bridge_ignores_matching_text_from_prior_turn(seeded_dsn: Dsn
     assert "The database has three tables." in "".join(deltas)
 
 
-def test_agui_emits_protocol_error_after_midstream_failure(seeded_dsn: Dsn) -> None:
+def test_agui_only_emits_validated_answer_when_model_retries(seeded_dsn: Dsn) -> None:
+    app = create_app(
+        settings=settings(seeded_dsn),
+        database=create_database_server(seeded_dsn),
+        model=retrying_catalog_model(),
+    )
+
+    with TestClient(app) as client:
+        response = client.post("/agui", json=request())
+
+    emitted = list(events(response.text))
+    text = "".join(
+        str(event["delta"]) for event in emitted if event["type"] == "TEXT_MESSAGE_CONTENT"
+    )
+    assert text == "There are 8 trips."
+    assert sum(event["type"] == "TEXT_MESSAGE_START" for event in emitted) == 1
+    assert not any(
+        event["type"] == "TOOL_CALL_START" and event["toolCallName"] == "submit_answer"
+        for event in emitted
+    )
+
+
+def test_agui_hides_unvalidated_text_after_midstream_failure(seeded_dsn: Dsn) -> None:
     failing = FailingStreamModel()
     app = create_app(
         settings=settings(seeded_dsn),
@@ -125,7 +160,7 @@ def test_agui_emits_protocol_error_after_midstream_failure(seeded_dsn: Dsn) -> N
 
     assert response.status_code == 200
     event_types = [event["type"] for event in events(response.text)]
-    assert "TEXT_MESSAGE_CONTENT" in event_types
+    assert "TEXT_MESSAGE_CONTENT" not in event_types
     assert "RUN_ERROR" in event_types
 
 
